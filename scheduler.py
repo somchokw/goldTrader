@@ -50,9 +50,9 @@ def run_trading_cycle():
         # Build Final Message
         if trade_plan.action == "WAIT":
             logger.info("Trade plan is WAIT. Skipping Discord notification to avoid spam.")
-            return
+            return trade_plan
 
-        final_message = f"**Trade Plan for {SYMBOL}** (Patch 1.4.2 Dynamic Signal)\n\n"
+        final_message = f"**Trade Plan for {SYMBOL}** (Patch 1.4.3 Spot Gold + Dynamic Signal)\n\n"
         final_message += f"**Action:** {trade_plan.action}\n"
         
         if trade_plan.action != "WAIT":
@@ -65,12 +65,16 @@ def run_trading_cycle():
         final_message += f"\n**Rationale:**\n{trade_plan.rationale}\n"
         final_message += risk_matrix_text
         
+        final_message += "\n---\n**โปรดให้คะแนนความแม่นยำและเหตุผลของแผนนี้ (0-10) โดยพิมพ์ตัวเลขลงในช่องแชทได้เลยครับ** 👇"
+        
         send_discord_notify(final_message)
         logger.info("Trading cycle completed successfully. Notification sent.")
+        return trade_plan
         
     except Exception as e:
         logger.error(f"Error during trading cycle: {e}", exc_info=True)
         send_discord_notify(f"❌ Exception in trading cycle: {e}")
+        return None
 
 def start_scheduler():
     if not GEMINI_API_KEY:

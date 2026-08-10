@@ -1,5 +1,13 @@
 # 📝 Patch Notes
 
+## v1.4.3 - Price Accuracy & Global Feedback
+**Date:** 2026-08-10
+
+### 🎯 Data Source Migration
+- **Spot Gold Integration:** เปลี่ยนระบบดึงราคากลางจาก `GC=F` (Gold Futures) เป็น `XAUUSD=X` (Spot Gold) เพื่อให้ราคาที่ AI ใช้วิเคราะห์ ตรงกับพอร์ต MT4/MT5 ของผู้ใช้แบบ 100% แก้ปัญหาราคาแนะนำคลาดเคลื่อนจากความจริง
+
+### 🧠 Global Feedback Loop
+- **Auto Signal Feedback:** ระบบจะขอคะแนนความพึงพอใจ 0-10 ทุกครั้งที่ส่งสัญญาณเทรดอัตโนมัติ (Auto Signals) โดยผู้ใช้สามารถพิมพ์ตัวเลขตอบกลับในช่องแชทได้ทันที และระบบจะทำการบันทึกเพื่อใช้ในการเรียนรู้ต่อไป
 ## v1.4.2 - Smart Feedback & Dynamic Signals
 **Date:** 2026-08-10
 

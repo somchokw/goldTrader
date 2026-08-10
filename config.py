@@ -16,7 +16,8 @@ DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 LLM_MODEL = "gemini/gemini-3.5-flash"
 
 # Trading Configurations
-SYMBOL = "GC=F" # For futures. Change to XAUUSD=X if trading CFD
+# Use XAUUSD=X for Spot Gold
+SYMBOL = "XAUUSD=X"
 INSTRUMENT_TYPE = "FUTURES" if "F" in SYMBOL else "CFD"
 
 CONTRACT_SIZE = 100.0  # 1 standard lot = 100 ounces for Gold
