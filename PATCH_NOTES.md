@@ -1,5 +1,15 @@
 # 📝 Patch Notes
 
+## v1.4 - Trade Management AI (Discord Bot + Vision)
+**Date:** 2026-08-10
+
+### 🤖 New Interactive Features (ฟีเจอร์ใหม่)
+- **Discord Bot Migration:** อัปเกรดจาก Webhook ส่งข้อความทางเดียว เป็น Discord Bot เต็มรูปแบบ (`bot.py`) ที่โต้ตอบกับผู้ใช้ได้ในห้องแชท
+- **Vision AI Parsing:** เพิ่มความสามารถให้ AI อ่านตัวเลข Entry, Current Price, TP, และ SL จากรูปภาพ (Screenshot หน้าจอ MT4/MT5) ที่ผู้ใช้ส่งเข้ามา
+- **Trade Management Agent:** เพิ่ม Agent ใหม่ที่ทำหน้าที่ "วิเคราะห์ออเดอร์ที่ถืออยู่" แล้วให้คำแนะนำว่าจะ HOLD, CLOSE, RAISE_SL, หรือ ADD_POSITION เพื่อดูแลความปลอดภัยให้พอร์ตแบบเรียลไทม์
+
+---
+
 ## v1.3 - Risk Management Module
 **Date:** 2026-08-10
 
