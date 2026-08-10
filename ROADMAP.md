@@ -54,6 +54,10 @@
 - **Data Source Migration:** เปลี่ยนสัญลักษณ์จาก `GC=F` (Gold Futures) เป็น `XAUUSD=X` (Spot Gold) เพื่อให้ราคาซิงก์กับพอร์ต MT4/MT5 ของผู้ใช้มากที่สุด
 - **Global Feedback:** ขยายระบบเก็บคะแนน 0-10 ให้ครอบคลุมไปถึงระบบสแกนอัตโนมัติรายชั่วโมง (Auto Signals) ด้วย
 
+### 🛠️ Patch v1.4.4: TradingView Data Integration
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- **TradingView Engine:** เปลี่ยนระบบดึงข้อมูลจาก `yfinance` เป็น `tradingview-ta` แก้ปัญหา API โดนบล็อก และได้ราคากับอินดิเคเตอร์ตรงกับกราฟ TradingView จริงแบบ 100% (อ้างอิง OANDA:XAUUSD)
+
 ---
 
 ## 🚀 Upcoming Patches (แผนพัฒนาในอนาคต)
