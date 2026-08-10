@@ -2,6 +2,10 @@ import yfinance as yf
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.tools import tool
 import os
+import time
+import datetime
+import requests
+import schedule
 from dotenv import load_dotenv
 import pandas_ta as ta
 
@@ -147,13 +151,46 @@ gold_crew = Crew(
     process=Process.sequential,  # ทำงานตามลำดับ 1 -> 2 -> 3
 )
 
+def send_discord_notify(message):
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL")
+    if not webhook_url or webhook_url == "your_discord_webhook_url_here_optional":
+        return
+    
+    data = {
+        "content": f"🤖 **Gold Trading AI Update** 📈\n```text\n{message}\n```"
+    }
+    try:
+        requests.post(webhook_url, json=data)
+    except Exception as e:
+        print(f"Error sending Discord Notify: {e}")
+
+def run_trading_bot():
+    print(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starting Gold Trading Crew...")
+    try:
+        result = gold_crew.kickoff()
+        output_msg = f"\n\n=======================================\nFinal Trading Strategy Result:\n=======================================\n{result}"
+        print(output_msg)
+        send_discord_notify(output_msg)
+    except Exception as e:
+        error_msg = f"Error running Gold Trading Crew: {e}"
+        print(error_msg)
+        send_discord_notify(error_msg)
+    print("Waiting for next scheduled run...")
+
 if __name__ == "__main__":
     if "GEMINI_API_KEY" not in os.environ:
         print("Warning: GEMINI_API_KEY environment variable is not set.")
         
-    print("Starting Gold Trading Crew...")
-    result = gold_crew.kickoff()
-    print("=======================================")
-    print("Final Trading Strategy Result:")
-    print("=======================================")
-    print(result)
+    print("=== Gold Trading Bot Scheduler Started ===")
+    print("The bot will run immediately, and then every 4 hours.")
+    
+    # รันรอบแรกทันที
+    run_trading_bot()
+    
+    # ตั้งเวลารันทุกๆ 4 ชั่วโมง
+    schedule.every(4).hours.do(run_trading_bot)
+    
+    # วนลูปเพื่อเช็คและรันตามเวลาที่กำหนด
+    while True:
+        schedule.run_pending()
+        time.sleep(60)  # เช็คทุก 1 นาที

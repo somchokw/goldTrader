@@ -1,5 +1,14 @@
 # 📝 Patch Notes
 
+## v1.2 - The Notification System
+**Date:** 2026-08-10
+
+### 📱 New Features (ฟีเจอร์ใหม่)
+- **Auto Scheduler:** เพิ่มระบบตั้งเวลาอัตโนมัติ (Scheduler) โดยใช้ไลบรารี `schedule` ทำให้บอทสามารถทำงานเองแบบลูปได้ (ค่าเริ่มต้นคือทุกๆ 4 ชั่วโมง)
+- **Discord Webhook Integration:** เพิ่มฟังก์ชันส่งรายงานการเทรดตรงเข้ามือถือผ่านระบบ Discord Webhook แบบ Optional (ทดแทน LINE Notify ที่กำลังจะปิดตัวลง)
+
+---
+
 ## v1.1.1 - Precision Sniper
 **Date:** 2026-08-10
 

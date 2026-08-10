@@ -1,3 +1,5 @@
 crewai
 yfinance
 pandas-ta
+requests
+schedule
