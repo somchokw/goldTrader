@@ -3,25 +3,56 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.tools import tool
 import os
 from dotenv import load_dotenv
+import pandas_ta as ta
 
 load_dotenv()
+
+@tool("Fetch Latest Gold News")
+def get_latest_gold_news():
+    """ดึงข่าวสารล่าสุดที่เกี่ยวกับทองคำเพื่อวิเคราะห์ Sentiment"""
+    gold = yf.Ticker("GC=F")
+    news_items = gold.news
+    if not news_items:
+        return "ไม่มีข่าวสารล่าสุดในระบบ yfinance"
+    
+    # รวบรวมหัวข้อข่าว 5 อันดับแรก
+    news_summary = ""
+    for idx, item in enumerate(news_items[:5], 1):
+        news_summary += f"{idx}. {item.get('title', 'No Title')} (Publisher: {item.get('publisher', 'Unknown')})\n"
+    return f"ข่าวล่าสุดเกี่ยวกับทองคำ:\n{news_summary}"
 
 # Tool สำหรับดึงข้อมูลกราฟเทคนิคอลทองคำ (XAU/USD)
 @tool("Fetch Gold Market Data")
 def get_gold_technical_data():
-    """ดึงข้อมูลราคา และคำนวณ Indicator ของทองคำ (GC=F หรือ XAUUSD)"""
+    """ดึงข้อมูลราคา และคำนวณ Indicator เชิงลึก (MACD, RSI, Bollinger Bands) ของทองคำ"""
     gold = yf.Ticker("GC=F")  # Gold Futures
-    hist = gold.history(period="1mo", interval="1d")
+    # ดึงข้อมูลมา 3 เดือนเพื่อให้มีข้อมูลพอสำหรับการคำนวณ Indicator
+    hist = gold.history(period="3mo", interval="1d")
 
-    # คำนวณ Moving Average หรือ RSI แบบง่าย
-    hist["SMA_20"] = hist["Close"].rolling(window=20).mean()
+    # คำนวณ Indicators ด้วย pandas-ta
+    hist.ta.macd(append=True)
+    hist.ta.rsi(length=14, append=True)
+    hist.ta.bbands(length=20, std=2, append=True)
+    hist["SMA_20"] = hist.ta.sma(length=20)
+    
     latest = hist.iloc[-1]
 
+    # กำหนดตัวแปรสำหรับคอลัมน์ที่ถูกสร้างโดย pandas-ta (อาจมีการปรับเปลี่ยนชื่อเล็กน้อยตามเวอร์ชัน)
+    # MACD ธรรมดาจะสร้างคอลัมน์ MACD_12_26_9, MACDh_12_26_9, MACDs_12_26_9
+    macd_val = latest.get("MACD_12_26_9", 0)
+    macd_signal = latest.get("MACDs_12_26_9", 0)
+    rsi_val = latest.get("RSI_14", 50)
+    bb_lower = latest.get("BBL_20_2.0", 0)
+    bb_upper = latest.get("BBU_20_2.0", 0)
+
     return f"""
+    --- Daily Timeframe Data ---
     ราคาปัจจุบัน (Close): {latest['Close']:.2f}
     High: {latest['High']:.2f}, Low: {latest['Low']:.2f}
-    SMA 20 วัน: {latest['SMA_20']:.2f}
-    เทรนด์คร่าวๆ: {'BULLISH' if latest['Close'] > latest['SMA_20'] else 'BEARISH'}
+    SMA 20 วัน: {latest.get('SMA_20', 0):.2f}
+    RSI (14): {rsi_val:.2f}
+    MACD: {macd_val:.2f} (Signal: {macd_signal:.2f})
+    Bollinger Bands: Lower={bb_lower:.2f}, Upper={bb_upper:.2f}
     """
 
 llm_model = "gemini/gemini-flash-latest"
@@ -31,6 +62,7 @@ macro_analyst = Agent(
     role="Gold Macro & Sentiment Analyst",
     goal="วิเคราะห์ภาพรวมเศรษฐกิจโลก ดอกเบี้ย FED ค่าเงิน DXY และสงครามที่มีผลต่อราคาทองคำ",
     backstory="คุณคือผู้เชี่ยวชาญด้านเศรษฐศาสตร์ มุ่งเน้นการวิเคราะห์สินทรัพย์ปลอดภัยอย่างทองคำ",
+    tools=[get_latest_gold_news],
     verbose=True,
     llm=llm_model
 )

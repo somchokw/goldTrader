@@ -1,2 +1,3 @@
 crewai
 yfinance
+pandas-ta
