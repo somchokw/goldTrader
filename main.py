@@ -151,17 +151,18 @@ gold_crew = Crew(
     process=Process.sequential,  # ทำงานตามลำดับ 1 -> 2 -> 3
 )
 
-def send_line_notify(message):
-    token = os.environ.get("LINE_NOTIFY_TOKEN")
-    if not token or token == "your_line_notify_token_here_optional":
+def send_discord_notify(message):
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL")
+    if not webhook_url or webhook_url == "your_discord_webhook_url_here_optional":
         return
-    url = "https://notify-api.line.me/api/notify"
-    headers = {"Authorization": f"Bearer {token}"}
-    data = {"message": message}
+    
+    data = {
+        "content": f"🤖 **Gold Trading AI Update** 📈\n```text\n{message}\n```"
+    }
     try:
-        requests.post(url, headers=headers, data=data)
+        requests.post(webhook_url, json=data)
     except Exception as e:
-        print(f"Error sending LINE Notify: {e}")
+        print(f"Error sending Discord Notify: {e}")
 
 def run_trading_bot():
     print(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starting Gold Trading Crew...")
@@ -169,11 +170,11 @@ def run_trading_bot():
         result = gold_crew.kickoff()
         output_msg = f"\n\n=======================================\nFinal Trading Strategy Result:\n=======================================\n{result}"
         print(output_msg)
-        send_line_notify(output_msg)
+        send_discord_notify(output_msg)
     except Exception as e:
         error_msg = f"Error running Gold Trading Crew: {e}"
         print(error_msg)
-        send_line_notify(error_msg)
+        send_discord_notify(error_msg)
     print("Waiting for next scheduled run...")
 
 if __name__ == "__main__":

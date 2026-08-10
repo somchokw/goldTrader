@@ -20,7 +20,7 @@
 
 ### 📱 Patch v1.2: The Notification System (ระบบรายงานตัว)
 **สถานะ: ดำเนินการแล้วเสร็จ**
-- **Line Notify Integration:** เมื่อ `Chief Gold Trader` สรุปแผนเสร็จ จะส่งข้อความแจ้งเตือน (Alert) แบบ Optional เข้าสู่สมาร์ทโฟนทันที
+- **Discord Webhook Integration:** เมื่อ `Chief Gold Trader` สรุปแผนเสร็จ จะส่งข้อความแจ้งเตือน (Alert) แบบ Optional เข้าสู่สมาร์ทโฟนหรือคอมพิวเตอร์ผ่าน Discord ทันที (ทดแทนระบบเก่า)
 - **Scheduler (ตั้งเวลารันอัตโนมัติ):** ใช้ไลบรารี `schedule` ให้บอทตื่นขึ้นมาทำงานเองลูปอัตโนมัติ (ปัจจุบันตั้งค่า Default ไว้ที่ทุกๆ 4 ชั่วโมง)
 
 ---
