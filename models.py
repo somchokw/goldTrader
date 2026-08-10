@@ -47,3 +47,18 @@ class TradeManagementPlan(BaseModel):
         if v not in ["HOLD", "CLOSE", "RAISE_SL", "ADD_POSITION"]:
             raise ValueError('Action must be HOLD, CLOSE, RAISE_SL, or ADD_POSITION')
         return v
+
+class RecoveryPlan(BaseModel):
+    action: str = Field(description="Must be exactly one of: 'REST', 'RECOVERY'")
+    recovery_entry: float = Field(description="Suggested entry price for a recovery trade. 0.0 if action is REST.")
+    recovery_sl: float = Field(description="Suggested Stop Loss for the recovery trade. 0.0 if action is REST.")
+    recovery_tp: float = Field(description="Suggested Take Profit for the recovery trade. 0.0 if action is REST.")
+    rationale: str = Field(description="A detailed explanation in Thai of why the original trade failed, and the justification for the recovery plan or resting.")
+
+    @field_validator('action')
+    @classmethod
+    def validate_action(cls, v: str) -> str:
+        v = v.upper()
+        if v not in ["REST", "RECOVERY"]:
+            raise ValueError('Action must be REST or RECOVERY')
+        return v

@@ -48,7 +48,11 @@ def run_trading_cycle():
                     risk_matrix_text += f"- ทุน ${item['balance']} -> เปิด {item['lot_size']} Lots (เสี่ยง ${item['risk_amount']:.2f})\n"
         
         # Build Final Message
-        final_message = f"**Trade Plan for {SYMBOL}**\n\n"
+        if trade_plan.action == "WAIT":
+            logger.info("Trade plan is WAIT. Skipping Discord notification to avoid spam.")
+            return
+
+        final_message = f"**Trade Plan for {SYMBOL}** (Patch 1.4.2 Dynamic Signal)\n\n"
         final_message += f"**Action:** {trade_plan.action}\n"
         
         if trade_plan.action != "WAIT":
@@ -62,7 +66,7 @@ def run_trading_cycle():
         final_message += risk_matrix_text
         
         send_discord_notify(final_message)
-        logger.info("Trading cycle completed successfully.")
+        logger.info("Trading cycle completed successfully. Notification sent.")
         
     except Exception as e:
         logger.error(f"Error during trading cycle: {e}", exc_info=True)
@@ -78,8 +82,8 @@ def start_scheduler():
     # Run once immediately
     run_trading_cycle()
     
-    # Schedule every 4 hours
-    schedule.every(4).hours.do(run_trading_cycle)
+    # Schedule every 1 hour (Patch 1.4.2)
+    schedule.every(1).hours.do(run_trading_cycle)
     
     try:
         while True:
