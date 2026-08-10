@@ -5,7 +5,6 @@ import logging
 from config import DISCORD_BOT_TOKEN, GEMINI_API_KEY
 from scheduler import run_trading_cycle
 from vision import extract_order_from_image
-from bot import run_bot
 from agents import create_trade_management_crew, create_recovery_crew
 import csv
 from datetime import datetime
