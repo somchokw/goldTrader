@@ -1,5 +1,15 @@
 # 📝 Patch Notes
 
+## v1.4.1 - Cloud Deployment Support
+**Date:** 2026-08-10
+
+### ☁️ New Infrastructure (โครงสร้างพื้นฐานใหม่)
+- **Keep-Alive Server (`keep_alive.py`):** เพิ่มเว็บเซิร์ฟเวอร์จำลองขนาดเล็กด้วย Flask เพื่อรันเป็น Background Thread คู่กับตัวบอท
+- **Procfile:** เพิ่มไฟล์ Procfile `web: python main.py`
+- **Render / Koyeb Ready:** โค้ดชุดนี้สามารถ Deploy ขึ้นผู้ให้บริการ Cloud แบบ Free Tier ได้ทันที โดยสามารถใช้ควบคู่กับ cron-job.org เพื่อป้องกันไม่ให้แอปพลิเคชันหลับ (Sleep) ได้ 100%
+
+---
+
 ## v1.4 - Trade Management AI (Discord Bot + Vision)
 **Date:** 2026-08-10
 

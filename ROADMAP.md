@@ -38,6 +38,11 @@
 - **Image Parsing:** สามารถอัปโหลดรูปหน้าจอ MT4/MT5 เข้าแชทเพื่อให้ Gemini AI อ่านค่าราคาเข้า, SL, TP ได้
 - **Trade Management Agent:** เพิ่มระบบให้คำปรึกษาเกี่ยวกับไม้ที่ถืออยู่ (HOLD, CLOSE, RAISE_SL, ADD_POSITION) พร้อมเหตุผลรองรับ
 
+### ☁️ Patch v1.4.1: Cloud Deployment Support
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- **Keep-Alive Server:** เพิ่ม `keep_alive.py` จำลองเว็บเซิร์ฟเวอร์ด้วย Flask
+- ปรับแต่งให้รันบน Free Tier ของ Render.com, Koyeb, และ Railway.app ได้โดยไม่โดนบังคับ Sleep
+
 ---
 
 ## 🚀 Upcoming Patches (แผนพัฒนาในอนาคต)
