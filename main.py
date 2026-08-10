@@ -1,6 +1,6 @@
 import logging
 import sys
-from scheduler import start_scheduler
+from bot import run_bot
 
 def setup_logging():
     logging.basicConfig(
@@ -17,4 +17,4 @@ def setup_logging():
 
 if __name__ == "__main__":
     setup_logging()
-    start_scheduler()
+    run_bot()

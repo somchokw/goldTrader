@@ -1,8 +1,7 @@
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, Process, Task, LLM
 from crewai.tools import tool
 import json
 import logging
-from langchain_google_genai import ChatGoogleGenerativeAI
 from config import GEMINI_API_KEY, LLM_MODEL
 from market_data import fetch_gold_news, fetch_macro_data
 from indicators import fetch_technical_data
@@ -10,10 +9,10 @@ from models import TradePlan
 
 logger = logging.getLogger(__name__)
 
-# Initialize LLM
-llm = ChatGoogleGenerativeAI(
+# Initialize LLM using CrewAI's wrapper
+llm = LLM(
     model=LLM_MODEL,
-    google_api_key=GEMINI_API_KEY,
+    api_key=GEMINI_API_KEY,
     temperature=0.2
 )
 
@@ -54,36 +53,89 @@ def create_gold_crew():
         llm=llm
     )
 
-    trade_strategist = Agent(
+    chief_trader = Agent(
         role="Chief Gold Trader",
-        goal="รวมข้อมูลจากปัจจัยพื้นฐานและเทคนิคอล เพื่อตัดสินใจแผนการเทรดทองคำ",
-        backstory="คุณคือ Portfolio Manager ที่ตัดสินใจเด็ดขาด เน้นทำกำไรและคุมความเสี่ยงเข้มงวด",
+        goal="นำข้อมูลทั้งหมดจาก Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดขั้นสุดท้าย โดยต้องคุม Risk/Reward ให้คุ้มค่า",
+        backstory="คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ คุณเป็นผู้ตัดสินใจขั้นเด็ดขาดว่าควรเทรดหรือไม่",
         verbose=True,
+        allow_delegation=False,
         llm=llm
     )
 
-    task_macro = Task(
-        description="รวบรวมข่าวสารล่าสุดของทองคำและข้อมูล Macro Data (DXY, US Yield)",
-        expected_output="สรุปทิศทางปัจจัยพื้นฐานว่าเป็นบวก (Bullish) หรือลบ (Bearish) ต่อราคาทอง",
-        agent=macro_analyst,
+    trade_manager = Agent(
+        role="Trade Management Specialist",
+        goal="ประเมินออเดอร์ที่ถืออยู่จากสถานการณ์ตลาดปัจจุบัน และตัดสินใจอย่างเด็ดขาดว่าจะ HOLD, CLOSE, RAISE_SL หรือ ADD_POSITION",
+        backstory="คุณคือผู้เชี่ยวชาญการบริหารจัดการหน้าตัก (Trade Management) คุณเก่งในการเอาตัวรอดในตลาดผันผวน รู้ว่าเมื่อไหร่ควรหนี (Close) เมื่อไหร่ควรเลื่อน Stop Loss บังหน้าทุน (Raise SL) และเมื่อไหร่ควรปล่อยให้กำไรรันต่อไป (Hold)",
+        verbose=True,
+        allow_delegation=False,
+        tools=[tool_get_latest_gold_news, tool_get_technical_data],
+        llm=llm
     )
 
-    task_tech = Task(
-        description="เรียกใช้ tool ดึงราคาและข้อมูลเทคนิคอลของทองคำล่าสุด (Daily และ 15m) แล้ววิเคราะห์จุดรับจุดต้าน (Swing High/Low, ATR)",
-        expected_output="สรุปสัญญาณทางเทคนิคอล สภาพแนวโน้ม และแนวรับ-แนวต้านสำคัญทั้งในระดับวันและระดับนาที",
-        agent=technical_analyst,
+    # 2. Define Tasks
+    macro_task = Task(
+        description="Fetch latest gold news and macro data, then summarize the market sentiment.",
+        expected_output="A structured JSON detailing the macro factors, DXY, US10Y, and overall sentiment.",
+        agent=macro_analyst
     )
 
-    task_strategy = Task(
-        description="นำข้อมูลพื้นฐานและเทคนิคอลมาประมวลผลรวมกัน เพื่อหาจุดเข้าที่แม่นยำที่สุดแบบ Sniper Entry (ใช้กราฟ 15m เป็นหลัก)",
-        expected_output="TradePlan JSON data structure with action, entry, SL, TP, and rationale.",
-        agent=trade_strategist,
+    technical_task = Task(
+        description="Fetch gold market data (1d and 15m). Compute technical indicators (RSI, MACD, BB) and support/resistance levels.",
+        expected_output="A JSON object containing current market price, RSI, trend, support and resistance levels.",
+        agent=technical_analyst
+    )
+
+    trader_task = Task(
+        description=(
+            "Based on the macro sentiment and technical analysis, decide the final trade action for Gold (GC=F).\n"
+            "You MUST output the result matching the Pydantic TradePlan schema EXACTLY.\n"
+            "If risk/reward is poor or market is uncertain, output 'WAIT'."
+        ),
+        expected_output="A JSON object conforming strictly to the TradePlan schema.",
+        agent=chief_trader,
         output_pydantic=TradePlan
     )
 
     crew = Crew(
-        agents=[macro_analyst, technical_analyst, trade_strategist],
-        tasks=[task_macro, task_tech, task_strategy],
+        agents=[macro_analyst, technical_analyst, chief_trader],
+        tasks=[macro_task, technical_task, trader_task],
         process=Process.sequential,
+        verbose=True
     )
+    
+    return crew
+
+def create_trade_management_crew(order_details: dict):
+    from models import TradeManagementPlan
+    
+    trade_manager = Agent(
+        role="Trade Management Specialist",
+        goal="ประเมินออเดอร์ที่ถืออยู่จากสถานการณ์ตลาดปัจจุบัน และตัดสินใจอย่างเด็ดขาดว่าจะ HOLD, CLOSE, RAISE_SL หรือ ADD_POSITION",
+        backstory="คุณคือผู้เชี่ยวชาญการบริหารจัดการหน้าตัก (Trade Management) คุณเก่งในการเอาตัวรอดในตลาดผันผวน รู้ว่าเมื่อไหร่ควรหนี (Close) เมื่อไหร่ควรเลื่อน Stop Loss บังหน้าทุน (Raise SL) และเมื่อไหร่ควรปล่อยให้กำไรรันต่อไป (Hold)",
+        verbose=True,
+        allow_delegation=False,
+        tools=[tool_get_latest_gold_news, tool_get_technical_data],
+        llm=llm
+    )
+    
+    manage_task = Task(
+        description=(
+            f"The user has an open order with the following details:\n"
+            f"{json.dumps(order_details, indent=2)}\n\n"
+            "Use your tools to check the CURRENT market sentiment and technicals (price, trend, support/resistance).\n"
+            "Evaluate if the order is still valid. Should they HOLD, CLOSE, RAISE_SL, or ADD_POSITION?\n"
+            "Output the result matching the TradeManagementPlan Pydantic schema EXACTLY."
+        ),
+        expected_output="A JSON object conforming strictly to the TradeManagementPlan schema.",
+        agent=trade_manager,
+        output_pydantic=TradeManagementPlan
+    )
+    
+    crew = Crew(
+        agents=[trade_manager],
+        tasks=[manage_task],
+        process=Process.sequential,
+        verbose=True
+    )
+    
     return crew

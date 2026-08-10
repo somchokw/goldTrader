@@ -1,0 +1,808 @@
+2026-08-10 16:17:22,730 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:17:22,730 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:17:22,731 [ERROR] scheduler: Error during trading cycle: 2 validation errors for Agent
+llm.str
+  Input should be a valid string [type=string_type, input_value=ChatGoogleGenerativeAI(me...ata=(), model_kwargs={}), input_type=ChatGoogleGenerativeAI]
+    For further information visit https://errors.pydantic.dev/2.12/v/string_type
+llm.BaseLLM
+  Input should be a valid dictionary or instance of BaseLLM [type=model_type, input_value=ChatGoogleGenerativeAI(me...ata=(), model_kwargs={}), input_type=ChatGoogleGenerativeAI]
+    For further information visit https://errors.pydantic.dev/2.12/v/model_type
+Traceback (most recent call last):
+  File "/opt/studiotwist/goldTrader/scheduler.py", line 16, in run_trading_cycle
+    crew = create_gold_crew()
+  File "/opt/studiotwist/goldTrader/agents.py", line 39, in create_gold_crew
+    macro_analyst = Agent(
+        role="Gold Macro & Sentiment Analyst",
+    ...<4 lines>...
+        llm=llm
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for Agent
+llm.str
+  Input should be a valid string [type=string_type, input_value=ChatGoogleGenerativeAI(me...ata=(), model_kwargs={}), input_type=ChatGoogleGenerativeAI]
+    For further information visit https://errors.pydantic.dev/2.12/v/string_type
+llm.BaseLLM
+  Input should be a valid dictionary or instance of BaseLLM [type=model_type, input_value=ChatGoogleGenerativeAI(me...ata=(), model_kwargs={}), input_type=ChatGoogleGenerativeAI]
+    For further information visit https://errors.pydantic.dev/2.12/v/model_type
+2026-08-10 16:17:23,435 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:21:23,147 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:21:23,147 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:21:23,173 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:21:23,783 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:21:23,785 [ERROR] root: Google Gemini API error: 404 - models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+2026-08-10 16:21:23,786 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:21:23,797 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:21:23,995 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:21:23,997 [ERROR] root: Google Gemini API error: 404 - models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+2026-08-10 16:21:23,998 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:21:24,008 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:21:24,281 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:21:24,282 [ERROR] root: Google Gemini API error: 404 - models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+2026-08-10 16:21:24,283 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:21:24,296 [ERROR] scheduler: Error during trading cycle: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "/opt/studiotwist/goldTrader/scheduler.py", line 17, in run_trading_cycle
+    result = crew.kickoff()
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1046, in kickoff
+    result = self._run_sequential_process()
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1501, in _run_sequential_process
+    return self._execute_tasks(self.tasks)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1605, in _execute_tasks
+    task_output = task.execute_sync(
+        agent=exec_data.agent,
+        context=context,
+        tools=exec_data.tools,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 593, in execute_sync
+    return self._execute_core(agent, context, tools)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 957, in _execute_core
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 850, in _execute_core
+    result = agent.execute_task(
+        task=self,
+        context=context,
+        tools=tools,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 777, in _handle_execution_error
+    return self.execute_task(task, context, tools)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 777, in _handle_execution_error
+    return self.execute_task(task, context, tools)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 776, in _handle_execution_error
+    self._check_execution_error(e, task)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 756, in _check_execution_error
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 879, in execute_task
+    result = self._execute_without_timeout(task_prompt, task)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 949, in _execute_without_timeout
+    invoke_result = self.agent_executor.invoke(
+        {
+    ...<4 lines>...
+        }
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/experimental/agent_executor.py", line 2862, in invoke
+    self.kickoff()
+    ~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2043, in kickoff
+    return asyncio.run(_run_flow())
+           ~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2029, in _run_flow
+    return await self.kickoff_async(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2347, in kickoff_async
+    await asyncio.gather(*tasks)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2712, in _execute_start_method
+    await self._execute_listeners(start_method_name, result, finished_event_id)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3036, in _execute_listeners
+    ) = await self._execute_single_listener(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        router_name, router_input, current_triggering_event_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3248, in _execute_single_listener
+    await self._execute_listeners(
+        listener_name, listener_result, finished_event_id
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3036, in _execute_listeners
+    ) = await self._execute_single_listener(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        router_name, router_input, current_triggering_event_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3244, in _execute_single_listener
+    listener_result, finished_event_id = await self._execute_method(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        listener_name, method
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2926, in _execute_method
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2828, in _execute_method
+    result = await asyncio.to_thread(ctx.run, method, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/flow_wrappers.py", line 101, in __call__
+    return self._meth(self._instance, *args, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/experimental/agent_executor.py", line 1518, in call_llm_native_tools
+    answer = get_llm_response(
+        llm=self.llm,
+    ...<9 lines>...
+        verbose=self.agent.verbose,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/utilities/agent_utils.py", line 582, in get_llm_response
+    answer = llm.call(
+        messages,
+    ...<5 lines>...
+        response_model=response_model,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 335, in call
+    return self._handle_completion(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        formatted_content,
+        ^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        effective_response_model,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 1172, in _handle_completion
+    raise e from e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 1161, in _handle_completion
+    response = self._get_sync_client().models.generate_content(
+        model=self.model,
+        contents=contents_for_api,
+        config=config,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 5629, in generate_content
+    return self._generate_content(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 4306, in _generate_content
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1401, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1237, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1214, in _request_once
+    errors.APIError.raise_for_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 134, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 159, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:21:25,245 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:22:00,501 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:22:00,501 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:22:00,520 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:22:01,058 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:22:01,060 [ERROR] root: Google Gemini API error: 404 - models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+2026-08-10 16:22:01,061 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:22:01,073 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:22:01,264 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:22:01,265 [ERROR] root: Google Gemini API error: 404 - models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+2026-08-10 16:22:01,265 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:22:01,275 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:22:01,513 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:22:01,515 [ERROR] root: Google Gemini API error: 404 - models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+2026-08-10 16:22:01,515 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:22:01,530 [ERROR] scheduler: Error during trading cycle: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "/opt/studiotwist/goldTrader/scheduler.py", line 17, in run_trading_cycle
+    result = crew.kickoff()
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1046, in kickoff
+    result = self._run_sequential_process()
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1501, in _run_sequential_process
+    return self._execute_tasks(self.tasks)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1605, in _execute_tasks
+    task_output = task.execute_sync(
+        agent=exec_data.agent,
+        context=context,
+        tools=exec_data.tools,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 593, in execute_sync
+    return self._execute_core(agent, context, tools)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 957, in _execute_core
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 850, in _execute_core
+    result = agent.execute_task(
+        task=self,
+        context=context,
+        tools=tools,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 777, in _handle_execution_error
+    return self.execute_task(task, context, tools)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 777, in _handle_execution_error
+    return self.execute_task(task, context, tools)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 776, in _handle_execution_error
+    self._check_execution_error(e, task)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 756, in _check_execution_error
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 879, in execute_task
+    result = self._execute_without_timeout(task_prompt, task)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 949, in _execute_without_timeout
+    invoke_result = self.agent_executor.invoke(
+        {
+    ...<4 lines>...
+        }
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/experimental/agent_executor.py", line 2862, in invoke
+    self.kickoff()
+    ~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2043, in kickoff
+    return asyncio.run(_run_flow())
+           ~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2029, in _run_flow
+    return await self.kickoff_async(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2347, in kickoff_async
+    await asyncio.gather(*tasks)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2712, in _execute_start_method
+    await self._execute_listeners(start_method_name, result, finished_event_id)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3036, in _execute_listeners
+    ) = await self._execute_single_listener(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        router_name, router_input, current_triggering_event_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3248, in _execute_single_listener
+    await self._execute_listeners(
+        listener_name, listener_result, finished_event_id
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3036, in _execute_listeners
+    ) = await self._execute_single_listener(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        router_name, router_input, current_triggering_event_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3244, in _execute_single_listener
+    listener_result, finished_event_id = await self._execute_method(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        listener_name, method
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2926, in _execute_method
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2828, in _execute_method
+    result = await asyncio.to_thread(ctx.run, method, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/flow_wrappers.py", line 101, in __call__
+    return self._meth(self._instance, *args, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/experimental/agent_executor.py", line 1518, in call_llm_native_tools
+    answer = get_llm_response(
+        llm=self.llm,
+    ...<9 lines>...
+        verbose=self.agent.verbose,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/utilities/agent_utils.py", line 582, in get_llm_response
+    answer = llm.call(
+        messages,
+    ...<5 lines>...
+        response_model=response_model,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 335, in call
+    return self._handle_completion(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        formatted_content,
+        ^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        effective_response_model,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 1172, in _handle_completion
+    raise e from e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 1161, in _handle_completion
+    response = self._get_sync_client().models.generate_content(
+        model=self.model,
+        contents=contents_for_api,
+        config=config,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 5629, in generate_content
+    return self._generate_content(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 4306, in _generate_content
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1401, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1237, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1214, in _request_once
+    errors.APIError.raise_for_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 134, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 159, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:22:02,279 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:32:31,092 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:32:31,093 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:32:31,112 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:32:32,240 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:32:32,242 [ERROR] root: Google Gemini API error: 404 - This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.
+2026-08-10 16:32:32,243 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:32:32,253 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:32:32,916 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:32:32,916 [ERROR] root: Google Gemini API error: 404 - This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.
+2026-08-10 16:32:32,917 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:32:32,924 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:32:33,813 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 16:32:33,814 [ERROR] root: Google Gemini API error: 404 - This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.
+2026-08-10 16:32:33,815 [ERROR] crewai.flow.runtime: Error executing listener call_llm_native_tools: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:32:33,827 [ERROR] scheduler: Error during trading cycle: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "/opt/studiotwist/goldTrader/scheduler.py", line 17, in run_trading_cycle
+    result = crew.kickoff()
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1046, in kickoff
+    result = self._run_sequential_process()
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1501, in _run_sequential_process
+    return self._execute_tasks(self.tasks)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/crew.py", line 1605, in _execute_tasks
+    task_output = task.execute_sync(
+        agent=exec_data.agent,
+        context=context,
+        tools=exec_data.tools,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 593, in execute_sync
+    return self._execute_core(agent, context, tools)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 957, in _execute_core
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/task.py", line 850, in _execute_core
+    result = agent.execute_task(
+        task=self,
+        context=context,
+        tools=tools,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 777, in _handle_execution_error
+    return self.execute_task(task, context, tools)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 777, in _handle_execution_error
+    return self.execute_task(task, context, tools)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 892, in execute_task
+    result = self._handle_execution_error(e, task, context, tools)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 776, in _handle_execution_error
+    self._check_execution_error(e, task)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 756, in _check_execution_error
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 879, in execute_task
+    result = self._execute_without_timeout(task_prompt, task)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/agent/core.py", line 949, in _execute_without_timeout
+    invoke_result = self.agent_executor.invoke(
+        {
+    ...<4 lines>...
+        }
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/experimental/agent_executor.py", line 2862, in invoke
+    self.kickoff()
+    ~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2043, in kickoff
+    return asyncio.run(_run_flow())
+           ~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2029, in _run_flow
+    return await self.kickoff_async(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2347, in kickoff_async
+    await asyncio.gather(*tasks)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2712, in _execute_start_method
+    await self._execute_listeners(start_method_name, result, finished_event_id)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3036, in _execute_listeners
+    ) = await self._execute_single_listener(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        router_name, router_input, current_triggering_event_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3248, in _execute_single_listener
+    await self._execute_listeners(
+        listener_name, listener_result, finished_event_id
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3036, in _execute_listeners
+    ) = await self._execute_single_listener(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        router_name, router_input, current_triggering_event_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 3244, in _execute_single_listener
+    listener_result, finished_event_id = await self._execute_method(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        listener_name, method
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2926, in _execute_method
+    raise e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/runtime/__init__.py", line 2828, in _execute_method
+    result = await asyncio.to_thread(ctx.run, method, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/flow/flow_wrappers.py", line 101, in __call__
+    return self._meth(self._instance, *args, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/experimental/agent_executor.py", line 1518, in call_llm_native_tools
+    answer = get_llm_response(
+        llm=self.llm,
+    ...<9 lines>...
+        verbose=self.agent.verbose,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/utilities/agent_utils.py", line 582, in get_llm_response
+    answer = llm.call(
+        messages,
+    ...<5 lines>...
+        response_model=response_model,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 335, in call
+    return self._handle_completion(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        formatted_content,
+        ^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        effective_response_model,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 1172, in _handle_completion
+    raise e from e
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/crewai/llms/providers/gemini/completion.py", line 1161, in _handle_completion
+    response = self._get_sync_client().models.generate_content(
+        model=self.model,
+        contents=contents_for_api,
+        config=config,
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 5629, in generate_content
+    return self._generate_content(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 4306, in _generate_content
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1401, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1237, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1214, in _request_once
+    errors.APIError.raise_for_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 134, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 159, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+2026-08-10 16:32:34,454 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:33:36,097 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:33:36,098 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:33:36,118 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:33:39,439 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:33:40,548 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:33:53,116 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:33:53,136 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 16:33:56,444 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:33:56,900 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 16:34:17,422 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:34:17,456 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 16:34:25,158 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:34:25,169 [ERROR] validators: Risk/Reward Ratio 1.28 is below minimum 1.5.
+2026-08-10 16:34:25,170 [WARNING] scheduler: Trade plan validation failed. Changing Action to WAIT.
+2026-08-10 16:34:26,013 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:34:26,015 [INFO] scheduler: Trading cycle completed successfully.
+2026-08-10 16:54:23,630 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:54:23,630 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:54:23,649 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:54:26,569 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:54:27,443 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:54:40,526 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:54:40,551 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 16:54:43,745 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:54:44,169 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 16:55:05,361 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:55:05,390 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 16:55:13,755 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:55:13,773 [ERROR] validators: Risk/Reward Ratio 1.25 is below minimum 1.5.
+2026-08-10 16:55:13,773 [WARNING] scheduler: Trade plan validation failed. Changing Action to WAIT.
+2026-08-10 16:55:14,402 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:55:14,404 [INFO] scheduler: Trading cycle completed successfully.
+2026-08-10 16:57:56,639 [INFO] scheduler: === Gold Trading Bot Started ===
+2026-08-10 16:57:56,639 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 16:57:56,663 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:57:59,960 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:58:00,906 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 16:58:14,815 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:58:14,847 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 16:58:18,345 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:58:18,759 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 16:58:36,262 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:58:36,291 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 16:58:46,301 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 16:58:47,148 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 16:58:47,150 [INFO] scheduler: Trading cycle completed successfully.
+2026-08-10 17:21:09,411 [ERROR] bot: DISCORD_BOT_TOKEN is missing! Fail fast.
+2026-08-10 17:21:44,131 [INFO] discord.client: logging in using static token
+2026-08-10 17:21:46,412 [INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 572a582f29e4333754950215aa4797df).
+2026-08-10 17:21:48,414 [INFO] bot: Logged in as goldman#6617
+2026-08-10 17:21:48,415 [INFO] bot: Running scheduled trading cycle via Discord loop.
+2026-08-10 17:21:48,415 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 17:21:49,027 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:21:53,612 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:21:54,641 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:22:06,621 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:22:06,657 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:22:09,430 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:22:09,845 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:22:18,525 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:22:18,560 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 17:22:28,972 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:22:28,995 [ERROR] scheduler: Failed to parse TradePlan from Agent output.
+2026-08-10 17:22:29,731 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 17:27:23,655 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 17:27:24,676 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-08-10 17:27:24,678 [ERROR] vision: Error extracting data from image: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+2026-08-10 17:27:24,678 [ERROR] bot: Error processing image: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "/opt/studiotwist/goldTrader/bot.py", line 49, in on_message
+    order_details = await asyncio.to_thread(extract_order_from_image, image_bytes)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/opt/studiotwist/goldTrader/vision.py", line 55, in extract_order_from_image
+    raise e
+  File "/opt/studiotwist/goldTrader/vision.py", line 40, in extract_order_from_image
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+    ...<5 lines>...
+        },
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 5644, in generate_content
+    response = self._generate_content(
+        model=model, contents=contents, config=parsed_config
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/models.py", line 4306, in _generate_content
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1401, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1237, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/_api_client.py", line 1214, in _request_once
+    errors.APIError.raise_for_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 134, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/studiotwist/goldTrader/venv/lib/python3.13/site-packages/google/genai/errors.py", line 159, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.', 'status': 'NOT_FOUND'}}
+2026-08-10 17:28:18,738 [INFO] discord.client: logging in using static token
+2026-08-10 17:28:21,000 [INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: ce42dd97c1f0883bdbd3211800470876).
+2026-08-10 17:28:23,022 [INFO] bot: Logged in as goldman#6617
+2026-08-10 17:28:23,022 [INFO] bot: Running scheduled trading cycle via Discord loop.
+2026-08-10 17:28:23,022 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 17:28:23,072 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:28:25,961 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:28:26,924 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:28:38,997 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:28:39,022 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:28:44,036 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:28:44,408 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:28:53,144 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:28:53,172 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 17:29:04,607 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:29:04,624 [ERROR] scheduler: Failed to parse TradePlan from Agent output.
+2026-08-10 17:29:05,615 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 17:30:48,640 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 17:30:52,731 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:30:53,463 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:30:53,464 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:30:56,398 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:30:56,778 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:30:56,778 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:31:00,021 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:31:00,509 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:31:00,509 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:31:13,788 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:38:28,660 [INFO] discord.client: logging in using static token
+2026-08-10 17:38:30,439 [INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 0ab0ba98fd428295beda5ad41f39e9f9).
+2026-08-10 17:38:32,442 [INFO] bot: Logged in as goldman#6617
+2026-08-10 17:38:32,442 [INFO] bot: Running scheduled trading cycle via Discord loop.
+2026-08-10 17:38:32,443 [INFO] scheduler: Starting Trading Cycle for GC=F...
+2026-08-10 17:38:32,499 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:38:36,378 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:38:37,642 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:38:48,693 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:38:48,726 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:38:52,378 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:38:52,959 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:39:04,262 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:39:04,289 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 17:39:15,003 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:39:15,641 [INFO] notifications: Successfully sent Discord notification.
+2026-08-10 17:39:15,642 [INFO] scheduler: Trading cycle completed successfully.
+2026-08-10 17:44:27,995 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-08-10 17:44:31,062 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:44:31,630 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:44:31,631 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:44:34,712 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-08-10 17:44:35,640 [INFO] root: Gemini: Successfully validated tool 'fetch_latest_gold_news'
+2026-08-10 17:44:35,640 [INFO] root: Gemini: Successfully validated tool 'fetch_technical_data'
+2026-08-10 17:44:46,701 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent "HTTP/1.1 200 OK"

@@ -19,12 +19,12 @@ class MarketSnapshot(BaseModel):
     trend_structure: str = "Neutral"
 
 class TradePlan(BaseModel):
-    action: str = Field(description="BUY, SELL, or WAIT")
-    exact_entry_price: float = Field(description="Exact entry price level")
-    stop_loss: float = Field(description="Stop loss level")
-    take_profit_1: float = Field(description="First take profit level")
-    take_profit_2: Optional[float] = Field(None, description="Second take profit level (optional)")
-    rationale: str = Field(description="Reasoning behind the trade plan")
+    action: str = Field(description="Must be exactly one of: 'BUY', 'SELL', 'WAIT'")
+    exact_entry_price: float = Field(description="The exact recommended entry price to execute the trade.")
+    stop_loss: float = Field(description="The exact stop loss price. Must be logically placed (below entry for BUY, above for SELL).")
+    take_profit_1: float = Field(description="The primary target profit price.")
+    take_profit_2: float = Field(description="An optional secondary target profit price (can be same as TP1 if not applicable).")
+    rationale: str = Field(description="A comprehensive explanation of the trade setup in Thai, referencing technicals, macro, and risk parameters.")
 
     @field_validator('action')
     @classmethod
@@ -32,4 +32,18 @@ class TradePlan(BaseModel):
         v = v.upper()
         if v not in ["BUY", "SELL", "WAIT"]:
             raise ValueError('Action must be BUY, SELL, or WAIT')
+        return v
+
+class TradeManagementPlan(BaseModel):
+    action: str = Field(description="Must be exactly one of: 'HOLD', 'CLOSE', 'RAISE_SL', 'ADD_POSITION'")
+    suggested_sl: float = Field(description="The suggested new Stop Loss price. Use the current SL if no change is needed, or 0.0 if closing.")
+    suggested_tp: float = Field(description="The suggested new Take Profit price. Use the current TP if no change is needed, or 0.0 if closing.")
+    rationale: str = Field(description="A detailed explanation of why the action is recommended, analyzing current price action vs original entry, in Thai.")
+
+    @field_validator('action')
+    @classmethod
+    def validate_action(cls, v: str) -> str:
+        v = v.upper()
+        if v not in ["HOLD", "CLOSE", "RAISE_SL", "ADD_POSITION"]:
+            raise ValueError('Action must be HOLD, CLOSE, RAISE_SL, or ADD_POSITION')
         return v
