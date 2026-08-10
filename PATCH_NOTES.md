@@ -1,5 +1,14 @@
 # 📝 Patch Notes
 
+## v1.1.1 - Precision Sniper
+**Date:** 2026-08-10
+
+### 🎯 New Features (ฟีเจอร์ใหม่)
+- **Intraday Data Integration:** เพิ่มฟังก์ชันการวิเคราะห์กราฟระดับ 15 นาที (15m) เข้าสู่ระบบ
+- **Sniper Entry:** อัปเกรดให้ `Chief Gold Trader` สรุปจุดเข้าเทรดแบบตัวเลขที่เจาะจง (Exact Price) มากยิ่งขึ้น
+
+---
+
 ## v1.1 - The Indicator Expansion
 **Date:** 2026-08-10
 

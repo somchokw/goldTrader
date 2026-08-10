@@ -55,6 +55,32 @@ def get_gold_technical_data():
     Bollinger Bands: Lower={bb_lower:.2f}, Upper={bb_upper:.2f}
     """
 
+# Tool สำหรับดึงข้อมูลกราฟ 15 นาที
+@tool("Fetch Intraday Gold Data")
+def get_intraday_technical_data():
+    """ดึงข้อมูลราคา และคำนวณ Indicator ของทองคำในระดับ 15 นาที (15m) สำหรับหาจุดเข้าที่แม่นยำ"""
+    gold = yf.Ticker("GC=F")
+    hist = gold.history(period="5d", interval="15m")
+    
+    if hist.empty:
+        return "ไม่มีข้อมูล Intraday 15m"
+
+    hist.ta.rsi(length=14, append=True)
+    hist.ta.bbands(length=20, std=2, append=True)
+    
+    latest = hist.iloc[-1]
+    
+    rsi_val = latest.get("RSI_14", 50)
+    bb_lower = latest.get("BBL_20_2.0", 0)
+    bb_upper = latest.get("BBU_20_2.0", 0)
+    
+    return f"""
+    --- 15-Minute (Intraday) Timeframe Data ---
+    ราคาล่าสุด (15m Close): {latest['Close']:.2f}
+    RSI 15m (14): {rsi_val:.2f}
+    Bollinger Bands 15m: Lower={bb_lower:.2f}, Upper={bb_upper:.2f}
+    """
+
 llm_model = "gemini/gemini-flash-latest"
 
 # Agent 1: สายข่าวและมหภาค
@@ -72,7 +98,7 @@ technical_analyst = Agent(
     role="Gold Technical Analyst",
     goal="อ่านกราฟเทคนิคอล คำนวณจุดรับ-จุดต้าน และโมเมนตัมของราคาทองคำ",
     backstory="คุณคือ Trader สาย Quant ที่วิเคราะห์อินดิเคเตอร์และโครงสร้างราคาได้อย่างแม่นยำ",
-    tools=[get_gold_technical_data],
+    tools=[get_gold_technical_data, get_intraday_technical_data],
     verbose=True,
     llm=llm_model
 )
@@ -95,21 +121,21 @@ task_macro = Task(
 
 # Task 2: วิเคราะห์เทคนิคอล
 task_tech = Task(
-    description="เรียกใช้ tool ดึงราคาและข้อมูลเทคนิคอลของทองคำล่าสุด แล้ววิเคราะห์จุดรับจุดต้าน",
-    expected_output="สรุปสัญญาณทางเทคนิคอล สภาพแนวโน้ม และแนวรับ-แนวต้านสำคัญ",
+    description="เรียกใช้ tool ดึงราคาและข้อมูลเทคนิคอลของทองคำล่าสุด (ทั้ง Daily และ Intraday 15m) แล้ววิเคราะห์จุดรับจุดต้าน",
+    expected_output="สรุปสัญญาณทางเทคนิคอล สภาพแนวโน้ม และแนวรับ-แนวต้านสำคัญทั้งในระดับวันและระดับนาที",
     agent=technical_analyst,
 )
 
 # Task 3: ออกแผนการเทรด
 task_strategy = Task(
-    description="นำข้อมูลพื้นฐานจาก task_macro และเทคนิคอลจาก task_tech มาประมวลผลรวมกันเพื่อวางแผนเทรด",
+    description="นำข้อมูลพื้นฐานและเทคนิคอลมาประมวลผลรวมกัน โดยบังคับให้ใช้กราฟ 15 นาที เพื่อหาจุดเข้าที่แม่นยำที่สุดแบบ Sniper Entry (ห้ามให้ช่วงราคากว้างเกิน 2 เหรียญ)",
     expected_output='''
-    จัดทำรายงานการเทรดทองคำ:
+    จัดทำรายงานการเทรดทองคำแบบ Sniper Execution:
     1. Action: (BUY / SELL / WAIT)
-    2. Entry Zone (ราคาเข้า):
+    2. Exact Entry Price (ตัวเลขจุดเข้าที่แม่นยำเป๊ะๆ อิงจาก 15m):
     3. Stop Loss (จุดตัดขาดทุน):
     4. Take Profit (จุดทำกำไร):
-    5. เหตุผลสนับสนุน:
+    5. เหตุผลสนับสนุน (อธิบายถึงความสอดคล้องระหว่าง Daily Trend และ 15m Reversal):
     ''',
     agent=trade_strategist,
 )
