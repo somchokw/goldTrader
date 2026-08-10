@@ -1,5 +1,12 @@
 # 📝 Patch Notes
 
+## v1.4.4 - TradingView Data Integration
+**Date:** 2026-08-10
+
+### 🚀 Technical Engine Overhaul
+- **TradingView TA:** เปลี่ยนระบบดึงข้อมูลกราฟและคำนวณอินดิเคเตอร์ทั้งหมดจาก `yfinance` + `pandas-ta` ไปใช้ `tradingview-ta` 
+- **OANDA XAUUSD:** ดึงข้อมูล Spot Gold (XAUUSD) จากโบรกเกอร์ OANDA บนแพลตฟอร์ม TradingView โดยตรง ทำให้ได้ราคาปัจจุบัน (Current Price) และค่าต่างๆ (RSI, MACD, SMA) ตรงกับกราฟในจอผู้ใช้ 100% 
+- **Bug Fix:** แก้ปัญหา Yahoo Finance บล็อก API (Error 403) จนทำให้ AI ขาดข้อมูลราคาปัจจุบันและหลอนเดาไปที่ราคา 1955.0
 ## v1.4.3 - Price Accuracy & Global Feedback
 **Date:** 2026-08-10
 
