@@ -139,3 +139,39 @@ def create_trade_management_crew(order_details: dict):
     )
     
     return crew
+
+def create_recovery_crew(order_details: dict):
+    from models import RecoveryPlan
+    
+    recovery_specialist = Agent(
+        role="Recovery & Psychology Specialist",
+        goal="วิเคราะห์สาเหตุที่ออเดอร์เดิมชน Stop Loss หรือล้างพอร์ต และตัดสินใจว่าจะแนะนำให้พัก (REST) หรือหาจุดเข้าใหม่เพื่อแก้เกม (RECOVERY)",
+        backstory="คุณคือผู้เชี่ยวชาญด้านการฟื้นฟูพอร์ตและจิตวิทยาการเทรด คุณรู้ว่าเมื่อไหร่ตลาดไม่เป็นใจและควรพักผ่อน และเมื่อไหร่เป็นเพียงการสะบัดกิน SL (Stop Hunt) ซึ่งสามารถเข้าแก้เกมได้ทันที คุณตัดสินใจเด็ดขาดและรอบคอบ",
+        verbose=True,
+        allow_delegation=False,
+        tools=[tool_get_latest_gold_news, tool_get_technical_data],
+        llm=llm
+    )
+    
+    recovery_task = Task(
+        description=(
+            f"The user has an order that just hit its STOP LOSS with the following details:\n"
+            f"{json.dumps(order_details, indent=2)}\n\n"
+            "Use your tools to check the CURRENT market sentiment and technicals (price, trend, support/resistance).\n"
+            "Analyze why the trade failed (e.g., trend reversal, stop hunt, major news).\n"
+            "Evaluate if they should 'REST' (wait for a better day) or 'RECOVERY' (enter a new trade now).\n"
+            "Output the result matching the RecoveryPlan Pydantic schema EXACTLY."
+        ),
+        expected_output="A JSON object conforming strictly to the RecoveryPlan schema.",
+        agent=recovery_specialist,
+        output_pydantic=RecoveryPlan
+    )
+    
+    crew = Crew(
+        agents=[recovery_specialist],
+        tasks=[recovery_task],
+        process=Process.sequential,
+        verbose=True
+    )
+    
+    return crew

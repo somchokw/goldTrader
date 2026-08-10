@@ -5,7 +5,10 @@ import logging
 from config import DISCORD_BOT_TOKEN, GEMINI_API_KEY
 from scheduler import run_trading_cycle
 from vision import extract_order_from_image
-from agents import create_trade_management_crew
+from bot import run_bot
+from agents import create_trade_management_crew, create_recovery_crew
+import csv
+from datetime import datetime
 import os
 
 logger = logging.getLogger(__name__)
@@ -13,6 +16,31 @@ logger = logging.getLogger(__name__)
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+
+# Dictionary to store users we are waiting feedback from: {user_id: {"order": dict, "advice": str}}
+waiting_for_feedback = {}
+
+def save_feedback(user_id, user_name, score):
+    feedback_data = waiting_for_feedback.get(user_id)
+    if not feedback_data: return
+    
+    file_exists = os.path.isfile('feedback.csv')
+    with open('feedback.csv', mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(["timestamp", "user", "order_action", "order_entry", "ai_advice_action", "score"])
+        
+        order = feedback_data['order']
+        advice = feedback_data['advice']
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            user_name,
+            order.get('action'),
+            order.get('entry_price'),
+            advice,
+            score
+        ])
+    del waiting_for_feedback[user_id]
 
 @tasks.loop(hours=4)
 async def scheduled_trading_cycle():
@@ -34,7 +62,16 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Check for image attachments
+    # 1. Check for feedback rating (0-10)
+    if message.author.id in waiting_for_feedback and not message.attachments:
+        text = message.content.strip()
+        if text.isdigit() and 0 <= int(text) <= 10:
+            score = int(text)
+            save_feedback(message.author.id, str(message.author), score)
+            await message.reply(f"🙏 ขอบคุณสำหรับคะแนน {score}/10 ครับ! ข้อมูลนี้จะถูกนำไปพัฒนา AI ให้เก่งขึ้นครับ")
+            return
+
+    # 2. Check for image attachments
     if message.attachments:
         for attachment in message.attachments:
             if any(attachment.filename.lower().endswith(ext) for ext in ['png', 'jpg', 'jpeg']):
@@ -63,10 +100,8 @@ async def on_message(message):
                     sl_val = order_details.stop_loss if order_details.stop_loss is not None else 0.0
                     tp_val = order_details.take_profit if order_details.take_profit is not None else 0.0
                     
-                    # 2. Run Trade Management Agent
-                    await message.channel.send(f"✅ อ่านค่าได้แล้ว:\n`Action: {order_details.action} | Entry: {order_details.entry_price} | Current: {order_details.current_price} | SL: {sl_val} | TP: {tp_val}`\n\nกำลังประเมินหน้าตักและเทรนด์ปัจจุบัน...")
+                    await message.channel.send(f"✅ อ่านค่าได้แล้ว:\n`Action: {order_details.action} | Entry: {order_details.entry_price} | Current: {order_details.current_price} | SL: {sl_val} | TP: {tp_val}`\n\nกำลังประเมินสถานการณ์...")
                     
-                    # Prepare dict for CrewAI
                     order_dict = {
                         "action": order_details.action,
                         "entry_price": order_details.entry_price,
@@ -74,6 +109,39 @@ async def on_message(message):
                         "stop_loss": sl_val,
                         "take_profit": tp_val
                     }
+
+                    # Detect if SL is hit
+                    is_sl_hit = False
+                    if sl_val > 0:
+                        if order_details.action.upper() == "BUY" and order_details.current_price <= sl_val:
+                            is_sl_hit = True
+                        elif order_details.action.upper() == "SELL" and order_details.current_price >= sl_val:
+                            is_sl_hit = True
+                            
+                    if is_sl_hit:
+                        await message.channel.send("🚨 ตรวจพบว่าออเดอร์นี้ชน Stop Loss ไปแล้ว กำลังเรียกใช้งาน Recovery Agent เพื่อหาแผนแก้เกม...")
+                        crew = create_recovery_crew(order_dict)
+                        result = await asyncio.to_thread(crew.kickoff)
+                        plan = getattr(result, 'pydantic', None)
+                        
+                        if not plan:
+                            await message.channel.send("❌ Error: Agent ไม่สามารถคืนค่า RecoveryPlan ได้")
+                            return
+                            
+                        reply = f"**Recovery Plan AI (Patch 1.4.2)** 🛡️\n\n"
+                        reply += f"**Action:** `{plan.action}`\n"
+                        if plan.action == "RECOVERY":
+                            reply += f"**Recovery Entry:** {plan.recovery_entry}\n"
+                            reply += f"**Recovery SL:** {plan.recovery_sl}\n"
+                            reply += f"**Recovery TP:** {plan.recovery_tp}\n"
+                        reply += f"\n**Rationale:**\n{plan.rationale}\n"
+                        
+                        waiting_for_feedback[message.author.id] = {"order": order_dict, "advice": plan.action}
+                        reply += "\n---\n**โปรดให้คะแนนคำแนะนำนี้ (0-10) โดยพิมพ์ตัวเลขตอบกลับมาได้เลยครับ** 👇"
+                        await message.reply(reply)
+                        return
+
+                    # 2. Run Trade Management Agent
                     crew = create_trade_management_crew(order_dict)
                     result = await asyncio.to_thread(crew.kickoff)
                     
@@ -83,13 +151,16 @@ async def on_message(message):
                         return
                     
                     # 3. Format Reply
-                    reply = f"**Trade Management AI (Patch 1.4)**\n\n"
+                    reply = f"**Trade Management AI (Patch 1.4.2)** 📈\n\n"
                     reply += f"**Action:** `{plan.action}`\n"
                     if plan.action in ["RAISE_SL", "HOLD", "ADD_POSITION"]:
                         reply += f"**Suggested SL:** {plan.suggested_sl}\n"
                         reply += f"**Suggested TP:** {plan.suggested_tp}\n"
                     
-                    reply += f"\n**Rationale:**\n{plan.rationale}"
+                    reply += f"\n**Rationale:**\n{plan.rationale}\n"
+                    
+                    waiting_for_feedback[message.author.id] = {"order": order_dict, "advice": plan.action}
+                    reply += "\n---\n**โปรดให้คะแนนคำแนะนำนี้ (0-10) โดยพิมพ์ตัวเลขตอบกลับมาได้เลยครับ** 👇"
                     
                     await message.reply(reply)
                     

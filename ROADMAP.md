@@ -43,6 +43,12 @@
 - **Keep-Alive Server:** เพิ่ม `keep_alive.py` จำลองเว็บเซิร์ฟเวอร์ด้วย Flask
 - ปรับแต่งให้รันบน Free Tier ของ Render.com, Koyeb, และ Railway.app ได้โดยไม่โดนบังคับ Sleep
 
+### 🛠️ Patch v1.4.2: Smart Feedback & Dynamic Signals
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- **Recovery Agent:** เพิ่มกลไกวิเคราะห์เมื่อไม้เทรดโดน SL เพื่อหาจุดแก้เกม
+- **Feedback Loop:** เพิ่มระบบให้คะแนนความแม่นยำ (0-10) จากผู้ใช้งานเพื่อปรับจูน Prompt อัตโนมัติ
+- **Smart Notification:** ปรับ Scheduler ให้แจ้งเตือนเฉพาะเมื่อเจอสัญญาณ High-Probability Setup เท่านั้น
+
 ---
 
 ## 🚀 Upcoming Patches (แผนพัฒนาในอนาคต)
