@@ -49,6 +49,11 @@
 - **Feedback Loop:** เพิ่มระบบให้คะแนนความแม่นยำ (0-10) จากผู้ใช้งานเพื่อปรับจูน Prompt อัตโนมัติ
 - **Smart Notification:** ปรับ Scheduler ให้แจ้งเตือนเฉพาะเมื่อเจอสัญญาณ High-Probability Setup เท่านั้น
 
+### 🛠️ Patch v1.4.3: Price Accuracy & Global Feedback
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- **Data Source Migration:** เปลี่ยนสัญลักษณ์จาก `GC=F` (Gold Futures) เป็น `XAUUSD=X` (Spot Gold) เพื่อให้ราคาซิงก์กับพอร์ต MT4/MT5 ของผู้ใช้มากที่สุด
+- **Global Feedback:** ขยายระบบเก็บคะแนน 0-10 ให้ครอบคลุมไปถึงระบบสแกนอัตโนมัติรายชั่วโมง (Auto Signals) ด้วย
+
 ---
 
 ## 🚀 Upcoming Patches (แผนพัฒนาในอนาคต)
