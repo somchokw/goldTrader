@@ -32,11 +32,19 @@
 
 ---
 
+### 🤖 Patch v1.4: Trade Management AI (ผู้ช่วยจัดการไม้เทรด)
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- **Discord Bot + Vision AI:** เปลี่ยนจาก Webhook ทางเดียว เป็นบอทโต้ตอบได้
+- **Image Parsing:** สามารถอัปโหลดรูปหน้าจอ MT4/MT5 เข้าแชทเพื่อให้ Gemini AI อ่านค่าราคาเข้า, SL, TP ได้
+- **Trade Management Agent:** เพิ่มระบบให้คำปรึกษาเกี่ยวกับไม้ที่ถืออยู่ (HOLD, CLOSE, RAISE_SL, ADD_POSITION) พร้อมเหตุผลรองรับ
+
+---
+
 ## 🚀 Upcoming Patches (แผนพัฒนาในอนาคต)
 
-### 🤖 Patch v1.4: Auto-Trading Execution (เทรดอัตโนมัติบน MT4/MT5)
-- **Position Sizing Calculator:** รับค่าเงินทุนในพอร์ต (Account Balance) แล้วให้ AI คำนวณ Lot Size ที่ควรเปิด โดยให้ความเสี่ยงไม่เกิน 1-2% ของพอร์ต
+### ⚙️ Patch v1.5: Trading Journal & Analytics
 - **Win-Rate Tracker:** เก็บประวัติการเทรดลงไฟล์ `.csv` อัตโนมัติ เพื่อนำมาประเมินผลความแม่นยำย้อนหลัง (Backtesting)
+- **Position Sizing Calculator:** รับค่าเงินทุนในพอร์ต (Account Balance) แล้วให้ AI คำนวณ Lot Size ที่ควรเปิด โดยให้ความเสี่ยงไม่เกิน 1-2% ของพอร์ต
 
 ### 📈 Patch v1.5: Machine Learning Forecasting
 **เป้าหมาย:** นำข้อมูลสถิติมาพยากรณ์ล่วงหน้า

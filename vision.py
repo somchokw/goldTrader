@@ -1,0 +1,55 @@
+import os
+from google import genai
+from pydantic import BaseModel, Field
+import json
+import logging
+from config import GEMINI_API_KEY
+from PIL import Image
+from io import BytesIO
+
+logger = logging.getLogger(__name__)
+
+from typing import Optional
+
+class OrderDetails(BaseModel):
+    entry_price: Optional[float] = Field(None, description="The entry price of the order. Null if not found.")
+    current_price: Optional[float] = Field(None, description="The current price of the asset. Null if not found.")
+    take_profit: Optional[float] = Field(None, description="The take profit (TP) price. Null if not set or not found.")
+    stop_loss: Optional[float] = Field(None, description="The stop loss (SL) price. Null if not set or not found.")
+    action: Optional[str] = Field(None, description="The order direction: 'BUY' or 'SELL'. Null if not found.")
+
+def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
+    """
+    Extracts trading order details (Entry, Current Price, TP, SL) from a screenshot.
+    """
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        img = Image.open(BytesIO(image_bytes))
+        
+        prompt = (
+            "Analyze this trading terminal screenshot (like MT4/MT5/TradingView). "
+            "Extract the following values for the active order:\n"
+            "- Entry Price\n"
+            "- Current Market Price\n"
+            "- Take Profit (TP) price (if not set, return 0.0)\n"
+            "- Stop Loss (SL) price (if not set, return 0.0)\n"
+            "- The action (BUY or SELL)\n\n"
+            "Return the data strictly in the requested JSON schema."
+        )
+        
+        response = client.models.generate_content(
+            model='gemini-3.5-flash',
+            contents=[img, prompt],
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': OrderDetails,
+                'temperature': 0.1,
+            },
+        )
+        
+        data = json.loads(response.text)
+        return OrderDetails(**data)
+        
+    except Exception as e:
+        logger.error(f"Error extracting data from image: {str(e)}")
+        raise e

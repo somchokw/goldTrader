@@ -9,10 +9,11 @@ HIGH_RISK_MODE_ENABLED = os.environ.get("HIGH_RISK_MODE_ENABLED", "False").lower
 # API Keys
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 
 # Model Configuration
 # Use stable version instead of 'latest' for reproducibility
-LLM_MODEL = "gemini/gemini-1.5-flash-001"
+LLM_MODEL = "gemini/gemini-3.5-flash"
 
 # Trading Configurations
 SYMBOL = "GC=F" # For futures. Change to XAUUSD=X if trading CFD
