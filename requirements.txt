@@ -1,5 +1,8 @@
-crewai
-yfinance
-pandas-ta
-requests
-schedule
+crewai>=0.28.0
+yfinance>=0.2.37
+pandas-ta>=0.3.14b0
+requests>=2.31.0
+schedule>=1.2.1
+pydantic>=2.7.0
+python-dotenv>=1.0.1
+langchain-google-genai>=1.0.3

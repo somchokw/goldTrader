@@ -24,9 +24,11 @@
 - **Scheduler (ตั้งเวลารันอัตโนมัติ):** ใช้ไลบรารี `schedule` ให้บอทตื่นขึ้นมาทำงานเองลูปอัตโนมัติ (ปัจจุบันตั้งค่า Default ไว้ที่ทุกๆ 4 ชั่วโมง)
 
 ### 🧠 Patch v1.3: Risk Management Module (เพิ่มบอทคุมความเสี่ยง)
-**สถานะ: ดำเนินการแล้วเสร็จ**
-- **Risk Manager Agent:** วิเคราะห์ระยะห่าง Stop Loss จากจุดเข้าเพื่อคำนวณความเสี่ยงเป็นดอลลาร์
-- **Dual Risk Matrix:** คำนวณตารางขนาดหลอด (Lot Size) ให้ 2 รูปแบบ ทั้งสายปลอดภัย (Safe Mode) สำหรับคนตามซิกแนล และสายปั้นพอร์ต (Sniper Mode) สำหรับรันทุนน้อย 
+**สถานะ: ดำเนินการแล้วเสร็จ (Major Refactor v1.3.1 - v1.3.5)**
+- **Deterministic Risk Engine:** ย้ายการคำนวณออกจากการกะประมาณของ LLM มาใช้สมการคณิตศาสตร์ที่แม่นยำ (Python) 
+- **Strict Data Validation:** ตรวจสอบโครงสร้างกราฟและข่าวแบบเข้มงวด
+- **Pydantic Structured Output:** บังคับ Agent คืนค่าผลลัพธ์การวิเคราะห์เป็น JSON schema
+- **Refactor Project Structure:** แยกโค้ดออกจาก `main.py` เป็นโมดูลที่แยกอิสระ (SOLID Principle) พร้อมชุดทดสอบ `pytest`
 
 ---
 
