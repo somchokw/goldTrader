@@ -116,6 +116,15 @@ trade_strategist = Agent(
     llm=llm_model
 )
 
+# Agent 4: บริหารความเสี่ยง (Risk Manager)
+risk_manager = Agent(
+    role="Risk Management Specialist",
+    goal="ประเมินความเสี่ยงและคำนวณ Lot Size ที่เหมาะสมจากแผนของ Chief Gold Trader",
+    backstory="คุณคือผู้เชี่ยวชาญด้านการบริหารความเสี่ยง (Risk Management) ที่ช่วยปกป้องเงินทุนของเทรดเดอร์ไม่ให้ล้างพอร์ต",
+    verbose=True,
+    llm=llm_model
+)
+
 # Task 1: วิเคราะห์ปัจจัยพื้นฐาน
 task_macro = Task(
     description="รวบรวมข่าวสารล่าสุดของทองคำ ดอกเบี้ยสหรัฐฯ และดัชนี DXY ในวันนี้",
@@ -144,11 +153,31 @@ task_strategy = Task(
     agent=trade_strategist,
 )
 
+# Task 4: คำนวณ Lot Size
+task_risk = Task(
+    description="นำแผนการเทรด (Action, Entry, Stop Loss) มาคำนวณระยะห่างความเสี่ยงเป็นดอลลาร์ และสร้างตารางแนะนำ Lot Size โดยใช้ข้อมูลว่า ทองคำ 1 Standard Lot = 100 ออนซ์",
+    expected_output='''
+    เพิ่มส่วน 🛡️ Risk Management (คำแนะนำการออกหลอด) ต่อท้ายรายงานแผนการเทรด โดยจัดรูปแบบตาราง Lot Size Guide ดังนี้:
+    (ระบุระยะ Stop Loss สำหรับไม้นี้เป็นดอลลาร์ต่อออนซ์)
+    
+    แบบที่ 1: สายปลอดภัย (Risk 1-2%) - สำหรับคนตามซิกแนลทั่วไป
+    - ทุน $1,000 -> เปิดออเดอร์ ... Lots
+    - ทุน $3,000 -> เปิดออเดอร์ ... Lots
+    - ทุน $5,000 -> เปิดออเดอร์ ... Lots
+    
+    แบบที่ 2: สายสไนเปอร์ (High Risk 50%) - พอร์ตปั้น/พอร์ตซิ่ง
+    - ทุน $30 -> เปิดออเดอร์ ... Lots
+    - ทุน $50 -> เปิดออเดอร์ ... Lots
+    - ทุน $100 -> เปิดออเดอร์ ... Lots
+    ''',
+    agent=risk_manager,
+)
+
 # รวมทีมและรันระบบ
 gold_crew = Crew(
-    agents=[macro_analyst, technical_analyst, trade_strategist],
-    tasks=[task_macro, task_tech, task_strategy],
-    process=Process.sequential,  # ทำงานตามลำดับ 1 -> 2 -> 3
+    agents=[macro_analyst, technical_analyst, trade_strategist, risk_manager],
+    tasks=[task_macro, task_tech, task_strategy, task_risk],
+    process=Process.sequential,  # ทำงานตามลำดับ 1 -> 2 -> 3 -> 4
 )
 
 def send_discord_notify(message):

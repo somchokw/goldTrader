@@ -1,5 +1,15 @@
 # 📝 Patch Notes
 
+## v1.3 - Risk Management Module
+**Date:** 2026-08-10
+
+### 🧠 New AI Agent (บอทใหม่)
+- **Risk Manager Agent:** เพิ่มตัวแทน AI ตัวที่ 4 เพื่อทำหน้าที่คำนวณหลอด (Lot Size) จากระยะ Stop Loss แบบอัตโนมัติ โดยสร้าง Risk Matrix ออกมา 2 รูปแบบ
+  - **Safe Mode:** สายเทรดปลอดภัย (ทุน $1k, $3k, $5k)
+  - **Sniper Mode:** สายปั้นพอร์ตความเสี่ยงสูง (ทุน $30, $50, $100)
+
+---
+
 ## v1.2 - The Notification System
 **Date:** 2026-08-10
 
