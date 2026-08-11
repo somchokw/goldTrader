@@ -95,7 +95,12 @@ async def on_message(message):
 
     # [DEBUG] Reply if mentioned to verify bot is alive
     if client.user in message.mentions:
-        await message.reply(f"🤖 บอทยังทำงานอยู่ครับ! (Patch 1.5.1) \nจำนวนรูปภาพที่แนบมา: {len(message.attachments)}")
+        await message.reply(f"🤖 บอทยังทำงานอยู่ครับ! (Patch 1.5.2) \nจำนวนรูปภาพที่แนบมา: {len(message.attachments)}")
+        
+    # Command: #check
+    if message.content.strip().lower() == "#check":
+        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม!")
+        return
 
     # 1. Check for feedback rating (0-10)
     if not message.attachments:
