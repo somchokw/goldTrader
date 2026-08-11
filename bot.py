@@ -93,6 +93,10 @@ async def on_message(message):
 
     logger.info(f"Received message from {message.author}: {message.content} (Attachments: {len(message.attachments)})")
 
+    # [DEBUG] Reply if mentioned to verify bot is alive
+    if client.user in message.mentions:
+        await message.reply(f"🤖 บอทยังทำงานอยู่ครับ! (Patch 1.5.1) \nจำนวนรูปภาพที่แนบมา: {len(message.attachments)}")
+
     # 1. Check for feedback rating (0-10)
     if not message.attachments:
         text = message.content.strip()
