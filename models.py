@@ -35,17 +35,17 @@ class TradePlan(BaseModel):
         return v
 
 class TradeManagementPlan(BaseModel):
-    action: str = Field(description="Must be exactly one of: 'HOLD', 'CLOSE', 'RAISE_SL', 'ADD_POSITION'")
-    suggested_sl: float = Field(description="The suggested new Stop Loss price. Use the current SL if no change is needed, or 0.0 if closing.")
-    suggested_tp: float = Field(description="The suggested new Take Profit price. Use the current TP if no change is needed, or 0.0 if closing.")
+    action: str = Field(description="Must be exactly one of: 'HOLD', 'CLOSE', 'RAISE_SL', 'ADD_POSITION', 'CANCEL_PENDING', 'WAIT_PENDING'")
+    suggested_sl: float = Field(description="The suggested new Stop Loss price. Use the current SL if no change is needed, or 0.0 if closing/canceling.")
+    suggested_tp: float = Field(description="The suggested new Take Profit price. Use the current TP if no change is needed, or 0.0 if closing/canceling.")
     rationale: str = Field(description="A detailed explanation of why the action is recommended, analyzing current price action vs original entry, in Thai.")
 
     @field_validator('action')
     @classmethod
     def validate_action(cls, v: str) -> str:
         v = v.upper()
-        if v not in ["HOLD", "CLOSE", "RAISE_SL", "ADD_POSITION"]:
-            raise ValueError('Action must be HOLD, CLOSE, RAISE_SL, or ADD_POSITION')
+        if v not in ["HOLD", "CLOSE", "RAISE_SL", "ADD_POSITION", "CANCEL_PENDING", "WAIT_PENDING"]:
+            raise ValueError('Action must be HOLD, CLOSE, RAISE_SL, ADD_POSITION, CANCEL_PENDING, or WAIT_PENDING')
         return v
 
 class RecoveryPlan(BaseModel):

@@ -110,8 +110,8 @@ def create_trade_management_crew(order_details: dict):
     
     trade_manager = Agent(
         role="Trade Management Specialist",
-        goal="ประเมินออเดอร์ที่ถืออยู่จากสถานการณ์ตลาดปัจจุบัน และตัดสินใจอย่างเด็ดขาดว่าจะ HOLD, CLOSE, RAISE_SL หรือ ADD_POSITION",
-        backstory="คุณคือผู้เชี่ยวชาญการบริหารจัดการหน้าตัก (Trade Management) คุณเก่งในการเอาตัวรอดในตลาดผันผวน รู้ว่าเมื่อไหร่ควรหนี (Close) เมื่อไหร่ควรเลื่อน Stop Loss บังหน้าทุน (Raise SL) และเมื่อไหร่ควรปล่อยให้กำไรรันต่อไป (Hold)",
+        goal="ประเมินออเดอร์ที่ถืออยู่หรือตั้งล่วงหน้า จากสถานการณ์ตลาดปัจจุบัน และตัดสินใจอย่างเด็ดขาดว่าจะ HOLD, CLOSE, RAISE_SL, ADD_POSITION, WAIT_PENDING หรือ CANCEL_PENDING",
+        backstory="คุณคือผู้เชี่ยวชาญการบริหารจัดการหน้าตัก (Trade Management) คุณเก่งในการเอาตัวรอดในตลาดผันผวน คุณต้องแยกแยะให้ออกว่าออเดอร์นั้นถูกเปิดแล้ว (ACTIVE) หรือเป็นเพียงออเดอร์ล่วงหน้า (PENDING) ถ้าราคาไปไกลจากจุด PENDING มากแล้วควรสั่งยกเลิก (CANCEL_PENDING)",
         verbose=True,
         allow_delegation=False,
         tools=[tool_get_latest_gold_news, tool_get_technical_data],
@@ -120,11 +120,13 @@ def create_trade_management_crew(order_details: dict):
     
     manage_task = Task(
         description=(
-            f"The user has an open order with the following details:\n"
+            f"The user has an order with the following details:\n"
             f"{json.dumps(order_details, indent=2)}\n\n"
             "Use your tools to check the CURRENT market sentiment and technicals (price, trend, support/resistance).\n"
-            "Evaluate if the order is still valid. Should they HOLD, CLOSE, RAISE_SL, or ADD_POSITION?\n"
-            "Output the result matching the TradeManagementPlan Pydantic schema EXACTLY."
+            "CRITICAL RULES:\n"
+            "1. If 'order_status' is 'ACTIVE', you MUST ONLY output: 'HOLD', 'CLOSE', 'RAISE_SL', or 'ADD_POSITION'.\n"
+            "2. If 'order_status' is 'PENDING', you MUST ONLY output: 'WAIT_PENDING' (if the setup is still valid and price is approaching) or 'CANCEL_PENDING' (if the price has moved far away and the setup is invalidated).\n"
+            "Evaluate if the order is still valid and output the result matching the TradeManagementPlan Pydantic schema EXACTLY."
         ),
         expected_output="A JSON object conforming strictly to the TradeManagementPlan schema.",
         agent=trade_manager,

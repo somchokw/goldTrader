@@ -58,7 +58,12 @@
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - **TradingView Engine:** เปลี่ยนระบบดึงข้อมูลจาก `yfinance` เป็น `tradingview-ta` แก้ปัญหา API โดนบล็อก และได้ราคากับอินดิเคเตอร์ตรงกับกราฟ TradingView จริงแบบ 100% (อ้างอิง OANDA:XAUUSD)
 
-### 🛠️ Patch v1.4.6: Dual-Scheduler Stability
+### Completed (Patch 1.4.7) 🧠
+- Added `order_status` detection (ACTIVE vs PENDING) to `vision.py`.
+- Updated Trade Management Agent to handle Pending Orders (WAIT_PENDING, CANCEL_PENDING).
+- Translated Action outputs into Thai for better user experience.
+
+### Completed (Patch 1.4.6) 🐞
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - Fixed Dual-Scheduler not running (Migrated schedule loop to `bot.py` via `discord.ext.tasks`).
 - Added debug logging for `on_message` image attachments.

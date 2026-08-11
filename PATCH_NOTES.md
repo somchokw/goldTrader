@@ -1,5 +1,13 @@
 # 📝 Patch Notes
 
+## v1.4.7 - 2026-08-11
+### Added
+- **Pending Order Support:** AI now extracts `order_status` (ACTIVE or PENDING) from images.
+- **Thai Translations:** Action outputs (HOLD, CLOSE, RAISE_SL) are now translated to Thai for clarity.
+
+### Changed
+- Trade Management Specialist prompt updated to evaluate Pending orders appropriately.
+
 ## v1.4.6 - 2026-08-11
 ### 🛠️ Fixed
 - **Dual-Scheduler Integration:** ย้ายระบบตั้งเวลา (`schedule` library) จาก `scheduler.py` มาใช้ `discord.ext.tasks` ใน `bot.py` เพื่อให้ลูปการทำงาน 15 นาที และ 4 ชั่วโมง สามารถรันคู่กับตัว Discord Bot ได้โดยไม่ถูกบล็อก

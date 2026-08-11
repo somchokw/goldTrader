@@ -140,19 +140,20 @@ async def on_message(message):
                     sl_val = order_details.stop_loss if order_details.stop_loss is not None else 0.0
                     tp_val = order_details.take_profit if order_details.take_profit is not None else 0.0
                     
-                    await message.channel.send(f"✅ อ่านค่าได้แล้ว:\n`Action: {order_details.action} | Entry: {order_details.entry_price} | Current: {order_details.current_price} | SL: {sl_val} | TP: {tp_val}`\n\nกำลังประเมินสถานการณ์...")
+                    await message.channel.send(f"✅ อ่านค่าได้แล้ว:\n`Action: {order_details.action} | Status: {order_details.order_status} | Entry: {order_details.entry_price} | Current: {order_details.current_price} | SL: {sl_val} | TP: {tp_val}`\n\nกำลังประเมินสถานการณ์...")
                     
                     order_dict = {
                         "action": order_details.action,
+                        "order_status": order_details.order_status,
                         "entry_price": order_details.entry_price,
                         "current_price": order_details.current_price,
                         "stop_loss": sl_val,
                         "take_profit": tp_val
                     }
 
-                    # Detect if SL is hit
+                    # Detect if SL is hit (only for ACTIVE orders)
                     is_sl_hit = False
-                    if sl_val > 0:
+                    if sl_val > 0 and order_details.order_status == "ACTIVE":
                         if order_details.action.upper() == "BUY" and order_details.current_price <= sl_val:
                             is_sl_hit = True
                         elif order_details.action.upper() == "SELL" and order_details.current_price >= sl_val:
@@ -168,7 +169,7 @@ async def on_message(message):
                             await message.channel.send("❌ Error: Agent ไม่สามารถคืนค่า RecoveryPlan ได้")
                             return
                             
-                        reply = f"**Recovery Plan AI (Patch 1.4.2)** 🛡️\n\n"
+                        reply = f"**Recovery Plan AI (Patch 1.4.7)** 🛡️\n\n"
                         reply += f"**Action:** `{plan.action}`\n"
                         if plan.action == "RECOVERY":
                             reply += f"**Recovery Entry:** {plan.recovery_entry}\n"
@@ -191,9 +192,19 @@ async def on_message(message):
                         return
                     
                     # 3. Format Reply
-                    reply = f"**Trade Management AI (Patch 1.4.2)** 📈\n\n"
-                    reply += f"**Action:** `{plan.action}`\n"
-                    if plan.action in ["RAISE_SL", "HOLD", "ADD_POSITION"]:
+                    action_translation = {
+                        "HOLD": "ถือออเดอร์รันเทรนด์ต่อไป (HOLD)",
+                        "CLOSE": "ปิดออเดอร์เก็บกำไร/ตัดขาดทุนทันที (CLOSE)",
+                        "RAISE_SL": "เลื่อน Stop Loss บังหน้าทุนเพื่อป้องกันความเสี่ยง (RAISE_SL)",
+                        "ADD_POSITION": "เปิดไม้เพิ่มตามแนวโน้มเดิม (ADD_POSITION)",
+                        "CANCEL_PENDING": "ยกเลิกออเดอร์ล่วงหน้าที่ตั้งไว้ (CANCEL_PENDING)",
+                        "WAIT_PENDING": "รอราคามาชนจุดเข้าที่ตั้งล่วงหน้าไว้ (WAIT_PENDING)"
+                    }
+                    action_th = action_translation.get(plan.action, plan.action)
+
+                    reply = f"**Trade Management AI (Patch 1.4.7)** 📈\n\n"
+                    reply += f"**Action:** `{action_th}`\n"
+                    if plan.action in ["RAISE_SL", "HOLD", "ADD_POSITION", "WAIT_PENDING"]:
                         reply += f"**Suggested SL:** {plan.suggested_sl}\n"
                         reply += f"**Suggested TP:** {plan.suggested_tp}\n"
                     

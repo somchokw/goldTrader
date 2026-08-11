@@ -17,10 +17,11 @@ class OrderDetails(BaseModel):
     take_profit: Optional[float] = Field(None, description="The take profit (TP) price. Null if not set or not found.")
     stop_loss: Optional[float] = Field(None, description="The stop loss (SL) price. Null if not set or not found.")
     action: Optional[str] = Field(None, description="The order direction: 'BUY' or 'SELL'. Null if not found.")
+    order_status: str = Field("ACTIVE", description="The status of the order: 'ACTIVE' (currently running/executed) or 'PENDING' (limit/stop order waiting to execute). Default to ACTIVE if unknown.")
 
 def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
     """
-    Extracts trading order details (Entry, Current Price, TP, SL) from a screenshot.
+    Extracts trading order details (Entry, Current Price, TP, SL, Status) from a screenshot.
     """
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
@@ -28,12 +29,13 @@ def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
         
         prompt = (
             "Analyze this trading terminal screenshot (like MT4/MT5/TradingView). "
-            "Extract the following values for the active order:\n"
+            "Extract the following values for the order:\n"
             "- Entry Price\n"
             "- Current Market Price\n"
             "- Take Profit (TP) price (if not set, return 0.0)\n"
             "- Stop Loss (SL) price (if not set, return 0.0)\n"
-            "- The action (BUY or SELL)\n\n"
+            "- The action (BUY or SELL)\n"
+            "- The status of the order (ACTIVE if it's currently running, PENDING if it's a Buy/Sell Limit or Stop order)\n\n"
             "Return the data strictly in the requested JSON schema."
         )
         
