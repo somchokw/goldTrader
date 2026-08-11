@@ -31,22 +31,8 @@ def run_trading_cycle(is_routine: bool = False):
             logger.warning("Trade plan validation failed. Changing Action to WAIT.")
             trade_plan.action = "WAIT"
             
-        # Calculate Risk Matrix
-        risk_matrix_text = ""
-        if trade_plan.action != "WAIT":
-            matrix = generate_risk_matrix(trade_plan.exact_entry_price, trade_plan.stop_loss)
-            
-            risk_matrix_text = "\n### 🛡️ Risk Management (Deterministic Python Engine)\n"
-            risk_matrix_text += f"* ระยะ Stop Loss: ${abs(trade_plan.exact_entry_price - trade_plan.stop_loss):.2f}/oz\n"
-            
-            risk_matrix_text += "\n**แบบที่ 1: Safe Mode (Risk 1%)**\n"
-            for item in matrix["safe_mode"]:
-                risk_matrix_text += f"- ทุน ${item['balance']} -> เปิด {item['lot_size']} Lots (เสี่ยง ${item['risk_amount']:.2f})\n"
-                
-            if matrix["sniper_mode"]:
-                risk_matrix_text += "\n**แบบที่ 2: Sniper Mode (High Risk 50%)**\n"
-                for item in matrix["sniper_mode"]:
-                    risk_matrix_text += f"- ทุน ${item['balance']} -> เปิด {item['lot_size']} Lots (เสี่ยง ${item['risk_amount']:.2f})\n"
+        # Skip Risk Matrix text generation as requested by user
+        pass
         
         # Build Final Message
         if trade_plan.action == "WAIT":
@@ -77,7 +63,6 @@ def run_trading_cycle(is_routine: bool = False):
                 final_message += f"**Take Profit 2:** {trade_plan.take_profit_2}\n"
                 
         final_message += f"\n**Rationale:**\n{trade_plan.rationale}\n"
-        final_message += risk_matrix_text
         
         final_message += "\n---\n**โปรดให้คะแนนความแม่นยำและเหตุผลของแผนนี้ (0-10) โดยพิมพ์ตัวเลขลงในช่องแชทได้เลยครับ** 👇"
         
