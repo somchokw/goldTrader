@@ -87,9 +87,9 @@ def create_gold_crew():
 
     trader_task = Task(
         description=(
-            "Based on the macro sentiment and technical analysis, decide the final trade action for Gold (GC=F).\n"
+            "Based on the macro sentiment and technical analysis, decide the final trade action for Spot Gold (XAUUSD).\n"
             "You MUST output the result matching the Pydantic TradePlan schema EXACTLY.\n"
-            "If risk/reward is poor or market is uncertain, output 'WAIT'."
+            "CRITICAL: Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance). If RR is < 1.0 or market is uncertain, output 'WAIT'."
         ),
         expected_output="A JSON object conforming strictly to the TradePlan schema.",
         agent=chief_trader,
