@@ -10,8 +10,9 @@ from config import GEMINI_API_KEY, SYMBOL
 
 logger = logging.getLogger(__name__)
 
-def run_trading_cycle():
-    logger.info(f"Starting Trading Cycle for {SYMBOL}...")
+def run_trading_cycle(is_routine: bool = False):
+    cycle_type = "Routine Update" if is_routine else "Sniper Scanner"
+    logger.info(f"Starting Trading Cycle ({cycle_type}) for {SYMBOL}...")
     try:
         crew = create_gold_crew()
         result = crew.kickoff()
@@ -49,10 +50,23 @@ def run_trading_cycle():
         
         # Build Final Message
         if trade_plan.action == "WAIT":
-            logger.info("Trade plan is WAIT. Skipping Discord notification to avoid spam.")
-            return trade_plan
+            if not is_routine:
+                logger.info("Trade plan is WAIT (Scanner). Skipping Discord notification to avoid spam.")
+                return trade_plan
+            else:
+                # Routine update for WAIT
+                final_message = f"📊 **Routine Market Update (ทุก 4 ชม.)**\n"
+                final_message += f"**Symbol:** {SYMBOL}\n"
+                final_message += f"**Action:** WAIT (รอสัญญาณ)\n\n"
+                final_message += f"**Rationale:**\n{trade_plan.rationale}\n\n"
+                final_message += "*หมายเหตุ: ระบบ Sniper Scanner จะคอยจับตาดูตลาดทุก 15 นาที หากมีจังหวะเข้าทำกำไร จะแจ้งเตือนทันทีครับ*"
+                send_discord_notify(final_message)
+                logger.info("Sent Routine WAIT update.")
+                return trade_plan
 
-        final_message = f"**Trade Plan for {SYMBOL}** (Patch 1.4.3 Spot Gold + Dynamic Signal)\n\n"
+        # It's a BUY/SELL signal
+        final_message = f"🚨 **Trade Signal Detected!** 🚨\n\n" if not is_routine else f"📊 **Routine Market Update (มีสัญญาณเข้าเทรด!)**\n\n"
+        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.4.5 Dual-Scheduler)\n"
         final_message += f"**Action:** {trade_plan.action}\n"
         
         if trade_plan.action != "WAIT":
@@ -76,6 +90,12 @@ def run_trading_cycle():
         send_discord_notify(f"❌ Exception in trading cycle: {e}")
         return None
 
+def _run_scanner():
+    run_trading_cycle(is_routine=False)
+
+def _run_routine():
+    run_trading_cycle(is_routine=True)
+
 def start_scheduler():
     if not GEMINI_API_KEY:
         logger.error("GEMINI_API_KEY is missing! Fail fast.")
@@ -83,11 +103,14 @@ def start_scheduler():
         
     logger.info("=== Gold Trading Bot Started ===")
     
-    # Run once immediately
-    run_trading_cycle()
+    # Run routine once immediately
+    _run_routine()
     
-    # Schedule every 1 hour (Patch 1.4.2)
-    schedule.every(1).hours.do(run_trading_cycle)
+    # Schedule Sniper Scanner every 15 minutes
+    schedule.every(15).minutes.do(_run_scanner)
+    
+    # Schedule Routine Report every 4 hours
+    schedule.every(4).hours.do(_run_routine)
     
     try:
         while True:
