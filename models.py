@@ -19,6 +19,8 @@ class MarketSnapshot(BaseModel):
     trend_structure: str = "Neutral"
     swing_high: Optional[float] = Field(None, description="The highest price in the recent N periods, acting as resistance.")
     swing_low: Optional[float] = Field(None, description="The lowest price in the recent N periods, acting as support.")
+    stoch_k: Optional[float] = Field(None, description="Stochastic %K line (8,3,3)")
+    stoch_d: Optional[float] = Field(None, description="Stochastic %D line (8,3,3)")
 
 class TradePlan(BaseModel):
     action: str = Field(description="Must be exactly one of: 'BUY', 'SELL', 'WAIT'")

@@ -33,20 +33,33 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
         # Determine Trend Structure based on SMA20
         trend = "Bullish" if close_price > sma20 else "Bearish"
         
-        # Fetch historical data for Swing High / Swing Low
+        # Fetch historical data for Swing High / Swing Low and Stochastic (8,3,3)
         swing_high = None
         swing_low = None
+        stoch_k = None
+        stoch_d = None
         try:
             yf_interval = "15m" if interval == "15m" else "1d"
-            # Fetch past 20 periods
+            # Fetch past 1 month (plenty for 20 periods and stoch 8,3,3)
             ticker = yf.Ticker("GC=F")
             hist = ticker.history(period="1mo", interval=yf_interval)
             if not hist.empty and len(hist) >= 20:
                 recent_20 = hist.tail(20)
                 swing_high = float(recent_20['High'].max())
                 swing_low = float(recent_20['Low'].min())
+                
+                # Calculate Stochastic (8,3,3)
+                low_8 = hist['Low'].rolling(window=8).min()
+                high_8 = hist['High'].rolling(window=8).max()
+                fast_k = 100 * ((hist['Close'] - low_8) / (high_8 - low_8))
+                
+                slow_k = fast_k.rolling(window=3).mean()
+                slow_d = slow_k.rolling(window=3).mean()
+                
+                stoch_k = float(slow_k.iloc[-1])
+                stoch_d = float(slow_d.iloc[-1])
         except Exception as yf_err:
-            logger.warning(f"Failed to fetch yfinance history for swing calculation: {yf_err}")
+            logger.warning(f"Failed to fetch yfinance history for indicators calculation: {yf_err}")
 
         snapshot = MarketSnapshot(
             symbol=SYMBOL,
@@ -65,7 +78,9 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
             volume=float(indicators.get("volume", 0.0)),
             trend_structure=trend,
             swing_high=swing_high,
-            swing_low=swing_low
+            swing_low=swing_low,
+            stoch_k=stoch_k,
+            stoch_d=stoch_d
         )
         
         return snapshot

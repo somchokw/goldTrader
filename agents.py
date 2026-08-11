@@ -90,8 +90,8 @@ def create_gold_crew():
             "Based on the macro sentiment and technical analysis, decide the final trade action for Spot Gold (XAUUSD).\n"
             "You MUST output the result matching the Pydantic TradePlan schema EXACTLY.\n"
             "CRITICAL SNIPER RULES:\n"
-            "1. To BUY: Price MUST be near 'swing_low' OR 'bb_lower' AND 'rsi_14' < 40.\n"
-            "2. To SELL: Price MUST be near 'swing_high' OR 'bb_upper' AND 'rsi_14' > 60.\n"
+            "1. To BUY: Price MUST be near 'swing_low' OR 'bb_lower'. AND 'rsi_14' < 40. AND 'stoch_k' must be crossing above 'stoch_d' in oversold area (< 20).\n"
+            "2. To SELL: Price MUST be near 'swing_high' OR 'bb_upper'. AND 'rsi_14' > 60. AND 'stoch_k' must be crossing below 'stoch_d' in overbought area (> 80).\n"
             "3. If conditions are not strictly met, output 'WAIT'. Do not force a trade.\n"
             "4. Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance)."
         ),
