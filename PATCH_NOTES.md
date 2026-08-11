@@ -1,5 +1,10 @@
 # 📝 Patch Notes
 
+## v1.4.6 - 2026-08-11
+### 🛠️ Fixed
+- **Dual-Scheduler Integration:** ย้ายระบบตั้งเวลา (`schedule` library) จาก `scheduler.py` มาใช้ `discord.ext.tasks` ใน `bot.py` เพื่อให้ลูปการทำงาน 15 นาที และ 4 ชั่วโมง สามารถรันคู่กับตัว Discord Bot ได้โดยไม่ถูกบล็อก
+- **Image Processing Debugging:** เพิ่มระบบ Debug Log เข้าไปใน `on_message` เพื่อตรวจสอบว่าบอทมองเห็นรูปภาพและอ่านนามสกุลไฟล์ได้ถูกต้องหรือไม่ (แก้ไขปัญหาส่งรูปแล้วบอทไม่ตอบ)
+
 ## v1.4.5 - Dual-Scheduler Logic
 **Date:** 2026-08-11
 

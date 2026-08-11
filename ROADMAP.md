@@ -58,6 +58,12 @@
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - **TradingView Engine:** เปลี่ยนระบบดึงข้อมูลจาก `yfinance` เป็น `tradingview-ta` แก้ปัญหา API โดนบล็อก และได้ราคากับอินดิเคเตอร์ตรงกับกราฟ TradingView จริงแบบ 100% (อ้างอิง OANDA:XAUUSD)
 
+### 🛠️ Patch v1.4.6: Dual-Scheduler Stability
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- Fixed Dual-Scheduler not running (Migrated schedule loop to `bot.py` via `discord.ext.tasks`).
+- Added debug logging for `on_message` image attachments.
+- Verified Discord Developer Intent (`Message Content`).
+
 ### 🛠️ Patch v1.4.5: Dual-Scheduler Logic
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - **Routine Update (ทุก 4 ชม.):** รายงานสถานการณ์ตลาดและพฤติกรรมกราฟเสมอ แม้ว่าจะยังไม่มีสัญญาณเข้าเทรด

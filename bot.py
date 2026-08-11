@@ -55,27 +55,43 @@ def save_feedback(user_id, user_name, score, is_auto=False):
     return True
 
 @tasks.loop(hours=4)
-async def scheduled_trading_cycle():
+async def routine_loop():
     global last_auto_plan
-    logger.info("Running scheduled trading cycle via Discord loop.")
-    plan = await asyncio.to_thread(run_trading_cycle)
+    logger.info("Running Routine Market Update (4 Hours) via Discord loop.")
+    plan = await asyncio.to_thread(run_trading_cycle, True)
     if plan and plan.action != "WAIT":
         last_auto_plan = plan
 
-@scheduled_trading_cycle.before_loop
-async def before_scheduled_cycle():
+@tasks.loop(minutes=15)
+async def scanner_loop():
+    global last_auto_plan
+    logger.info("Running Sniper Scanner (15 Minutes) via Discord loop.")
+    plan = await asyncio.to_thread(run_trading_cycle, False)
+    if plan and plan.action != "WAIT":
+        last_auto_plan = plan
+
+@routine_loop.before_loop
+async def before_routine_loop():
+    await client.wait_until_ready()
+
+@scanner_loop.before_loop
+async def before_scanner_loop():
     await client.wait_until_ready()
 
 @client.event
 async def on_ready():
     logger.info(f'Logged in as {client.user}')
-    if not scheduled_trading_cycle.is_running():
-        scheduled_trading_cycle.start()
+    if not routine_loop.is_running():
+        routine_loop.start()
+    if not scanner_loop.is_running():
+        scanner_loop.start()
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
+
+    logger.info(f"Received message from {message.author}: {message.content} (Attachments: {len(message.attachments)})")
 
     # 1. Check for feedback rating (0-10)
     if not message.attachments:
@@ -97,6 +113,7 @@ async def on_message(message):
     # 2. Check for image attachments
     if message.attachments:
         for attachment in message.attachments:
+            logger.info(f"Processing attachment: {attachment.filename}")
             if any(attachment.filename.lower().endswith(ext) for ext in ['png', 'jpg', 'jpeg']):
                 await message.channel.send("📸 กำลังวิเคราะห์รูปภาพพอร์ตของคุณ โปรดรอสักครู่...")
                 
