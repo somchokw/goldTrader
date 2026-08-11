@@ -113,8 +113,15 @@ async def on_message(message):
     # 2. Check for image attachments
     if message.attachments:
         for attachment in message.attachments:
-            logger.info(f"Processing attachment: {attachment.filename}")
-            if any(attachment.filename.lower().endswith(ext) for ext in ['png', 'jpg', 'jpeg']):
+            logger.info(f"Processing attachment: {attachment.filename} (Type: {attachment.content_type})")
+            
+            is_image = False
+            if attachment.content_type and attachment.content_type.startswith('image/'):
+                is_image = True
+            elif any(attachment.filename.lower().endswith(ext) for ext in ['png', 'jpg', 'jpeg', 'webp', 'heic']):
+                is_image = True
+                
+            if is_image:
                 await message.channel.send("📸 กำลังวิเคราะห์รูปภาพพอร์ตของคุณ โปรดรอสักครู่...")
                 
                 try:
