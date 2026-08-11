@@ -1,13 +1,14 @@
 import logging
 from datetime import datetime, timezone
 from tradingview_ta import TA_Handler, Interval
+import yfinance as yf
 from config import SYMBOL, EXCHANGE, SCREENER
 from models import MarketSnapshot
 
 logger = logging.getLogger(__name__)
 
 def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
-    """Fetch technical data directly from TradingView API."""
+    """Fetch technical data directly from TradingView API and yfinance for swing points."""
     try:
         # Map our internal interval string to TradingView TA Interval enum
         tv_interval = Interval.INTERVAL_15_MINUTES if interval == "15m" else Interval.INTERVAL_1_DAY
@@ -32,6 +33,21 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
         # Determine Trend Structure based on SMA20
         trend = "Bullish" if close_price > sma20 else "Bearish"
         
+        # Fetch historical data for Swing High / Swing Low
+        swing_high = None
+        swing_low = None
+        try:
+            yf_interval = "15m" if interval == "15m" else "1d"
+            # Fetch past 20 periods
+            ticker = yf.Ticker("GC=F")
+            hist = ticker.history(period="1mo", interval=yf_interval)
+            if not hist.empty and len(hist) >= 20:
+                recent_20 = hist.tail(20)
+                swing_high = float(recent_20['High'].max())
+                swing_low = float(recent_20['Low'].min())
+        except Exception as yf_err:
+            logger.warning(f"Failed to fetch yfinance history for swing calculation: {yf_err}")
+
         snapshot = MarketSnapshot(
             symbol=SYMBOL,
             timeframe=interval,
@@ -47,7 +63,9 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
             bb_upper=float(indicators.get("BB.upper", 0.0)),
             atr=float(indicators.get("ATR", 0.0)) if "ATR" in indicators else None,
             volume=float(indicators.get("volume", 0.0)),
-            trend_structure=trend
+            trend_structure=trend,
+            swing_high=swing_high,
+            swing_low=swing_low
         )
         
         return snapshot

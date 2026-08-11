@@ -40,7 +40,7 @@ def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
         )
         
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-1.5-flash',
             contents=[img, prompt],
             config={
                 'response_mime_type': 'application/json',

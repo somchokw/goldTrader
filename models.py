@@ -17,6 +17,8 @@ class MarketSnapshot(BaseModel):
     atr: Optional[float] = None
     volume: Optional[float] = None
     trend_structure: str = "Neutral"
+    swing_high: Optional[float] = Field(None, description="The highest price in the recent N periods, acting as resistance.")
+    swing_low: Optional[float] = Field(None, description="The lowest price in the recent N periods, acting as support.")
 
 class TradePlan(BaseModel):
     action: str = Field(description="Must be exactly one of: 'BUY', 'SELL', 'WAIT'")

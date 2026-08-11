@@ -46,8 +46,8 @@ def create_gold_crew():
 
     technical_analyst = Agent(
         role="Gold Technical Analyst",
-        goal="อ่านกราฟเทคนิคอล คำนวณจุดรับ-จุดต้าน และโมเมนตัมของราคาทองคำ",
-        backstory="คุณคือ Trader สาย Quant ที่วิเคราะห์อินดิเคเตอร์และโครงสร้างราคาได้อย่างแม่นยำ วิเคราะห์จาก Data Snapshot ที่ได้มาเท่านั้น",
+        goal="อ่านกราฟเทคนิคอล คำนวณจุดรับ-จุดต้านจาก Swing High / Swing Low และโมเมนตัมของราคาทองคำ",
+        backstory="คุณคือ Trader สาย Quant ที่วิเคราะห์โครงสร้างราคา (Market Structure) จาก Swing High/Low ในอดีตได้อย่างแม่นยำ วิเคราะห์จาก Data Snapshot ที่ได้มาเท่านั้น",
         tools=[tool_get_technical_data],
         verbose=True,
         llm=llm
@@ -56,7 +56,7 @@ def create_gold_crew():
     chief_trader = Agent(
         role="Chief Gold Trader",
         goal="นำข้อมูลทั้งหมดจาก Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดขั้นสุดท้าย โดยต้องคุม Risk/Reward ให้คุ้มค่า",
-        backstory="คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ คุณเป็นผู้ตัดสินใจขั้นเด็ดขาดว่าควรเทรดหรือไม่",
+        backstory="คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ คุณมีกฎการเทรดที่เข้มงวดและจะไม่เปิดออเดอร์มั่วซั่ว คุณเป็นผู้ตัดสินใจขั้นเด็ดขาดว่าควรเทรดหรือไม่",
         verbose=True,
         allow_delegation=False,
         llm=llm
@@ -80,7 +80,7 @@ def create_gold_crew():
     )
 
     technical_task = Task(
-        description="Fetch gold market data (1d and 15m). Compute technical indicators (RSI, MACD, BB) and support/resistance levels.",
+        description="Fetch gold market data (1d and 15m). Compute technical indicators (RSI, MACD, BB) and support/resistance levels from swing_high/swing_low.",
         expected_output="A JSON object containing current market price, RSI, trend, support and resistance levels.",
         agent=technical_analyst
     )
@@ -89,7 +89,11 @@ def create_gold_crew():
         description=(
             "Based on the macro sentiment and technical analysis, decide the final trade action for Spot Gold (XAUUSD).\n"
             "You MUST output the result matching the Pydantic TradePlan schema EXACTLY.\n"
-            "CRITICAL: Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance). If RR is < 1.0 or market is uncertain, output 'WAIT'."
+            "CRITICAL SNIPER RULES:\n"
+            "1. To BUY: Price MUST be near 'swing_low' OR 'bb_lower' AND 'rsi_14' < 40.\n"
+            "2. To SELL: Price MUST be near 'swing_high' OR 'bb_upper' AND 'rsi_14' > 60.\n"
+            "3. If conditions are not strictly met, output 'WAIT'. Do not force a trade.\n"
+            "4. Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance)."
         ),
         expected_output="A JSON object conforming strictly to the TradePlan schema.",
         agent=chief_trader,
