@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timezone
 import yfinance as yf
+from tvDatafeed import TvDatafeed, Interval
 from config import SYMBOL
 from models import MarketSnapshot
 import pandas as pd
@@ -8,22 +9,29 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# Initialize tvDatafeed (without login it acts as guest)
+tv = TvDatafeed()
+
 def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
-    """Fetch technical data using yfinance and pandas native calculations."""
+    """Fetch technical data using tvDatafeed and pandas native calculations."""
     try:
-        yf_interval = "15m" if interval == "15m" else "1d"
-        # Fetch past 2 months (60 days is the max for 15m in yfinance)
-        ticker = yf.Ticker("GC=F")
-        hist = ticker.history(period="1mo", interval=yf_interval)
+        tv_interval = Interval.in_15_minute if interval == "15m" else Interval.in_daily
         
-        if hist.empty or len(hist) < 26:
-            logger.error(f"Insufficient historical data from yfinance for {interval}")
+        # Fetch up to 500 bars to ensure enough data for 1-month equivalent
+        hist = tv.get_hist(symbol="GOLD", exchange="TVC", interval=tv_interval, n_bars=500)
+        
+        if hist is None or hist.empty or len(hist) < 26:
+            logger.error(f"Insufficient historical data from tvDatafeed for {interval}")
             return None
             
-        close_price = float(hist['Close'].iloc[-1])
-        high_price = float(hist['High'].iloc[-1])
-        low_price = float(hist['Low'].iloc[-1])
-        volume = float(hist['Volume'].iloc[-1])
+        # The columns returned by tvDatafeed are lowercase: open, high, low, close, volume
+        close_price = float(hist['close'].iloc[-1])
+        high_price = float(hist['high'].iloc[-1])
+        low_price = float(hist['low'].iloc[-1])
+        volume = float(hist['volume'].iloc[-1])
+        
+        # We need to map them back to Capitalized for the rest of our math
+        hist = hist.rename(columns={'close': 'Close', 'high': 'High', 'low': 'Low', 'volume': 'Volume', 'open': 'Open'})
         
         # SMA 20
         sma20_series = hist['Close'].rolling(window=20).mean()
