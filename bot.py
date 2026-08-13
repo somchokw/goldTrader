@@ -57,18 +57,24 @@ def save_feedback(user_id, user_name, score, is_auto=False):
 @tasks.loop(hours=4)
 async def routine_loop():
     global last_auto_plan
-    logger.info("Running Routine Market Update (4 Hours) via Discord loop.")
-    plan = await asyncio.to_thread(run_trading_cycle, True)
-    if plan and plan.action != "WAIT":
-        last_auto_plan = plan
+    try:
+        logger.info("Running Routine Market Update (4 Hours) via Discord loop.")
+        plan = await asyncio.to_thread(run_trading_cycle, True)
+        if plan and plan.action != "WAIT":
+            last_auto_plan = plan
+    except Exception as e:
+        logger.error(f"Error in routine_loop: {e}")
 
 @tasks.loop(minutes=15)
 async def scanner_loop():
     global last_auto_plan
-    logger.info("Running Sniper Scanner (15 Minutes) via Discord loop.")
-    plan = await asyncio.to_thread(run_trading_cycle, False)
-    if plan and plan.action != "WAIT":
-        last_auto_plan = plan
+    try:
+        logger.info("Running Sniper Scanner (15 Minutes) via Discord loop.")
+        plan = await asyncio.to_thread(run_trading_cycle, False)
+        if plan and plan.action != "WAIT":
+            last_auto_plan = plan
+    except Exception as e:
+        logger.error(f"Error in scanner_loop: {e}")
 
 @routine_loop.before_loop
 async def before_routine_loop():
@@ -100,6 +106,35 @@ async def on_message(message):
     # Command: #check
     if message.content.strip().lower() == "#check":
         await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม!")
+        return
+
+    # Command: #checkgold
+    if message.content.strip().lower() == "#checkgold":
+        await message.reply("🔄 กำลังดึงข้อมูลราคาทองคำและสถิติทางเทคนิคล่าสุด โปรดรอสักครู่...")
+        try:
+            from indicators import fetch_technical_data
+            snapshot = await asyncio.to_thread(fetch_technical_data, "15m")
+            if snapshot:
+                reply = f"📊 **Gold Market Status (XAUUSD - 15m)** 📊\n\n"
+                reply += f"**Current Price:** ${snapshot.close_price:.2f}\n"
+                reply += f"**Trend (SMA20):** {snapshot.trend_structure}\n"
+                reply += f"**RSI (14):** {snapshot.rsi_14:.2f}\n"
+                
+                stoch_k_str = f"{snapshot.stoch_k:.2f}" if snapshot.stoch_k else "N/A"
+                stoch_d_str = f"{snapshot.stoch_d:.2f}" if snapshot.stoch_d else "N/A"
+                reply += f"**Stochastic (8,3,3):** %K = {stoch_k_str}, %D = {stoch_d_str}\n"
+                
+                swing_h_str = f"${snapshot.swing_high:.2f}" if snapshot.swing_high else "N/A"
+                swing_l_str = f"${snapshot.swing_low:.2f}" if snapshot.swing_low else "N/A"
+                reply += f"**Resistance (Swing High):** {swing_h_str}\n"
+                reply += f"**Support (Swing Low):** {swing_l_str}\n"
+                
+                await message.reply(reply)
+            else:
+                await message.reply("❌ ไม่สามารถดึงข้อมูลทางเทคนิคได้ในขณะนี้ครับ")
+        except Exception as e:
+            logger.error(f"Error checking gold price: {e}", exc_info=True)
+            await message.reply(f"❌ เกิดข้อผิดพลาดในการดึงข้อมูล: {str(e)}")
         return
 
     # 1. Check for feedback rating (0-10)
