@@ -40,11 +40,11 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
         binance_interval = "15m" if interval == "15m" else "1d"
         url = f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500"
         
-        import requests as std_requests # Standard requests for Binance API
-        r = std_requests.get(url, timeout=10)
+        # Use curl_cffi to spoof browser and bypass Cloudflare for Binance API
+        r = requests.get(url, impersonate='chrome110', timeout=10)
         
         if r.status_code != 200:
-            logger.error(f"Failed to fetch Binance data: {r.text}")
+            logger.error(f"Failed to fetch Binance data (Status {r.status_code}): {r.text[:200]}...")
             return None
             
         data = r.json()

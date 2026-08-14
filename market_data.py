@@ -1,76 +1,74 @@
-import yfinance as yf
 import logging
 from typing import List, Dict
+from curl_cffi import requests
+import xml.etree.ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
-import sys
-import io
-
 def fetch_macro_data() -> Dict:
-    """Fetch DXY and US 10Y Yield, suppressing Cloudflare HTML spam."""
+    """Fetch DXY and US 10Y Yield directly from TradingView Scanner API."""
     data = {}
-    
-    # Suppress stderr to hide Yahoo Finance Cloudflare HTML spam
-    original_stderr = sys.stderr
-    sys.stderr = io.StringIO()
-    
     try:
-        # DXY (US Dollar Index)
-        dxy = yf.Ticker("DX-Y.NYB")
-        dxy_hist = dxy.history(period="1d")
-        if not dxy_hist.empty:
-            data['dxy_close'] = float(dxy_hist['Close'].iloc[-1])
+        payload = {
+            'symbols': {'tickers': ['TVC:DXY', 'TVC:US10Y'], 'query': {'types': []}},
+            'columns': ['close']
+        }
+        r = requests.post(
+            'https://scanner.tradingview.com/global/scan', 
+            json=payload, 
+            impersonate='chrome110',
+            timeout=10
+        )
+        if r.status_code == 200:
+            json_data = r.json()
+            for item in json_data.get('data', []):
+                symbol = item.get('s')
+                close_price = item.get('d', [None])[0]
+                
+                if symbol == 'TVC:DXY':
+                    data['dxy_close'] = float(close_price) if close_price else None
+                elif symbol == 'TVC:US10Y':
+                    data['us10y_yield'] = float(close_price) if close_price else None
         else:
+            logger.error(f"TradingView Scanner returned status {r.status_code}")
             data['dxy_close'] = None
-            
-        # US 10-Year Treasury Yield (^TNX)
-        tnx = yf.Ticker("^TNX")
-        tnx_hist = tnx.history(period="1d")
-        if not tnx_hist.empty:
-            data['us10y_yield'] = float(tnx_hist['Close'].iloc[-1])
-        else:
             data['us10y_yield'] = None
             
     except Exception as e:
-        logger.error(f"Error fetching macro data (likely blocked): {e}")
+        logger.error(f"Error fetching macro data from TradingView: {e}")
         data['error'] = str(e)
-    finally:
-        sys.stderr = original_stderr
         
     return data
 
 def fetch_gold_news() -> str:
-    """Fetch latest gold news using new yfinance schema."""
-    original_stderr = sys.stderr
-    sys.stderr = io.StringIO()
+    """Fetch latest gold news from Investing.com RSS feed."""
     try:
-        gold = yf.Ticker("GC=F")
-        news_items = gold.news
-        if not news_items:
-            return "ไม่มีข่าวสารล่าสุดในระบบ yfinance"
+        r = requests.get(
+            'https://www.investing.com/rss/news_11.rss',
+            impersonate='chrome110',
+            timeout=10
+        )
         
-        news_summary = ""
-        for idx, item in enumerate(news_items[:5], 1):
-            # Support both old and new schema
-            content = item.get("content", item)
+        if r.status_code != 200:
+            return "ไม่สามารถโหลดข่าวสารล่าสุดได้ในขณะนี้"
             
-            title = content.get("title", "No Title")
-            provider = content.get("provider", {}).get("displayName", "Unknown") if isinstance(content.get("provider"), dict) else content.get("publisher", "Unknown")
-            pub_date = content.get("pubDate", "")
-            url = content.get("clickThroughUrl", content.get("link", ""))
+        root = ET.fromstring(r.text)
+        news_items = []
+        
+        for item in root.findall('./channel/item')[:5]:
+            title = item.find('title').text if item.find('title') is not None else "No Title"
+            pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ""
+            link = item.find('link').text if item.find('link') is not None else ""
             
-            if title == "No Title":
-                continue # Skip invalid items per spec
-                
-            news_summary += f"{idx}. {title}\n   Provider: {provider} | Date: {pub_date}\n   URL: {url}\n\n"
+            # Format pubDate if necessary, but Investing.com gives standard RSS format
+            news_items.append(f"• {title}\n  Date: {pub_date}\n  URL: {link}\n")
             
-        if not news_summary:
+        if not news_items:
              return "No valid news titles found."
              
-        return f"ข่าวล่าสุดเกี่ยวกับทองคำ (อ้างอิงจากข้อมูลจริงเท่านั้น):\n{news_summary}"
+        news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(news_items)])
+        return f"ข่าวล่าสุดเกี่ยวกับทองคำ (อ้างอิงจาก Investing.com):\n{news_summary}"
+        
     except Exception as e:
-        logger.error(f"Error fetching gold news (likely blocked): {e}")
+        logger.error(f"Error fetching gold news from RSS: {e}")
         return f"Error fetching news: {e}"
-    finally:
-        sys.stderr = original_stderr
