@@ -4,9 +4,17 @@ from typing import List, Dict
 
 logger = logging.getLogger(__name__)
 
+import sys
+import io
+
 def fetch_macro_data() -> Dict:
-    """Fetch DXY and US 10Y Yield."""
+    """Fetch DXY and US 10Y Yield, suppressing Cloudflare HTML spam."""
     data = {}
+    
+    # Suppress stderr to hide Yahoo Finance Cloudflare HTML spam
+    original_stderr = sys.stderr
+    sys.stderr = io.StringIO()
+    
     try:
         # DXY (US Dollar Index)
         dxy = yf.Ticker("DX-Y.NYB")
@@ -25,13 +33,17 @@ def fetch_macro_data() -> Dict:
             data['us10y_yield'] = None
             
     except Exception as e:
-        logger.error(f"Error fetching macro data: {e}")
+        logger.error(f"Error fetching macro data (likely blocked): {e}")
         data['error'] = str(e)
+    finally:
+        sys.stderr = original_stderr
         
     return data
 
 def fetch_gold_news() -> str:
     """Fetch latest gold news using new yfinance schema."""
+    original_stderr = sys.stderr
+    sys.stderr = io.StringIO()
     try:
         gold = yf.Ticker("GC=F")
         news_items = gold.news
@@ -58,5 +70,7 @@ def fetch_gold_news() -> str:
              
         return f"ข่าวล่าสุดเกี่ยวกับทองคำ (อ้างอิงจากข้อมูลจริงเท่านั้น):\n{news_summary}"
     except Exception as e:
-        logger.error(f"Error fetching gold news: {e}")
+        logger.error(f"Error fetching gold news (likely blocked): {e}")
         return f"Error fetching news: {e}"
+    finally:
+        sys.stderr = original_stderr

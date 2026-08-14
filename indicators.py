@@ -31,36 +31,49 @@ def get_spot_gold_price() -> float:
     return None
 
 def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
-    """Fetch technical data using yfinance (Futures) and adjust to Spot Gold price."""
+    """Fetch technical data using Binance (PAXG) and adjust to Spot Gold price."""
     try:
         # 1. Fetch real Spot Gold price
         spot_price = get_spot_gold_price()
-        if not spot_price:
-            logger.error("Could not retrieve Spot Gold price. Aborting technical data fetch.")
-            return None
-
-        # 2. Fetch Gold Futures (GC=F) history for indicators (never blocked)
-        yf_interval = "15m" if interval == "15m" else "1d"
-        ticker = yf.Ticker("GC=F")
-        hist = ticker.history(period="1mo", interval=yf_interval)
         
-        if hist.empty or len(hist) < 26:
-            logger.error(f"Insufficient historical data from yfinance for {interval}")
+        # 2. Fetch Gold proxy (PAXGUSDT) history for indicators (never blocked)
+        binance_interval = "15m" if interval == "15m" else "1d"
+        url = f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500"
+        
+        import requests as std_requests # Standard requests for Binance API
+        r = std_requests.get(url, timeout=10)
+        
+        if r.status_code != 200:
+            logger.error(f"Failed to fetch Binance data: {r.text}")
             return None
             
-        futures_close = float(hist['Close'].iloc[-1])
-        futures_high = float(hist['High'].iloc[-1])
-        futures_low = float(hist['Low'].iloc[-1])
+        data = r.json()
+        if not data or len(data) < 26:
+            logger.error(f"Insufficient historical data from Binance for {interval}")
+            return None
+            
+        # Convert Binance data to DataFrame
+        df = pd.DataFrame(data, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume', 'close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'])
+        hist = df[['Open', 'High', 'Low', 'Close', 'Volume']].astype(float)
+            
+        proxy_close = float(hist['Close'].iloc[-1])
+        proxy_high = float(hist['High'].iloc[-1])
+        proxy_low = float(hist['Low'].iloc[-1])
         volume = float(hist['Volume'].iloc[-1])
         
+        # Fallback to proxy price if TradingView scanner failed
+        if not spot_price:
+            logger.warning("Could not retrieve Spot Gold price from TV. Falling back to PAXGUSDT price.")
+            spot_price = proxy_close
+        
         # 3. Calculate Spread
-        spread = futures_close - spot_price
-        logger.info(f"Gold Futures: {futures_close}, Spot Gold: {spot_price}, Spread: {spread}")
+        spread = proxy_close - spot_price
+        logger.info(f"PAXG Proxy: {proxy_close}, Spot Gold: {spot_price}, Spread: {spread}")
         
         # Adjust current candle prices
         close_price = spot_price
-        high_price = futures_high - spread
-        low_price = futures_low - spread
+        high_price = proxy_high - spread
+        low_price = proxy_low - spread
         
         # SMA 20
         sma20_series = hist['Close'].rolling(window=20).mean()
