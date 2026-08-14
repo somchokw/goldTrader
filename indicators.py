@@ -9,12 +9,25 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# Initialize tvDatafeed (without login it acts as guest)
-tv = TvDatafeed()
+# Lazy initialization of tvDatafeed to prevent startup crashes if blocked
+_tv = None
+
+def get_tv():
+    global _tv
+    if _tv is None:
+        try:
+            _tv = TvDatafeed()
+        except Exception as e:
+            logger.error(f"Failed to initialize tvDatafeed: {e}")
+    return _tv
 
 def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
     """Fetch technical data using tvDatafeed and pandas native calculations."""
     try:
+        tv = get_tv()
+        if tv is None:
+            return None
+        
         tv_interval = Interval.in_15_minute if interval == "15m" else Interval.in_daily
         
         # Fetch up to 500 bars to ensure enough data for 1-month equivalent
