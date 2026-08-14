@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timezone
 import yfinance as yf
-from tvDatafeed import TvDatafeed, Interval
+from curl_cffi import requests
 from config import SYMBOL
 from models import MarketSnapshot
 import pandas as pd
@@ -9,56 +9,72 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# Lazy initialization of tvDatafeed to prevent startup crashes if blocked
-_tv = None
-
-def get_tv():
-    global _tv
-    if _tv is None:
-        try:
-            _tv = TvDatafeed()
-        except Exception as e:
-            logger.error(f"Failed to initialize tvDatafeed: {e}")
-    return _tv
+def get_spot_gold_price() -> float:
+    """Fetch real-time Spot Gold (TVC:GOLD) price bypassing Cloudflare using curl_cffi."""
+    try:
+        data = {
+            'symbols': {'tickers': ['TVC:GOLD'], 'query': {'types': []}},
+            'columns': ['close']
+        }
+        r = requests.post(
+            'https://scanner.tradingview.com/global/scan', 
+            json=data, 
+            impersonate='chrome110',
+            timeout=10
+        )
+        if r.status_code == 200:
+            json_data = r.json()
+            if 'data' in json_data and len(json_data['data']) > 0:
+                return float(json_data['data'][0]['d'][0])
+    except Exception as e:
+        logger.error(f"Failed to fetch Spot Gold price from TradingView scanner: {e}")
+    return None
 
 def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
-    """Fetch technical data using tvDatafeed and pandas native calculations."""
+    """Fetch technical data using yfinance (Futures) and adjust to Spot Gold price."""
     try:
-        tv = get_tv()
-        if tv is None:
+        # 1. Fetch real Spot Gold price
+        spot_price = get_spot_gold_price()
+        if not spot_price:
+            logger.error("Could not retrieve Spot Gold price. Aborting technical data fetch.")
             return None
+
+        # 2. Fetch Gold Futures (GC=F) history for indicators (never blocked)
+        yf_interval = "15m" if interval == "15m" else "1d"
+        ticker = yf.Ticker("GC=F")
+        hist = ticker.history(period="1mo", interval=yf_interval)
         
-        tv_interval = Interval.in_15_minute if interval == "15m" else Interval.in_daily
-        
-        # Fetch up to 500 bars to ensure enough data for 1-month equivalent
-        hist = tv.get_hist(symbol="GOLD", exchange="TVC", interval=tv_interval, n_bars=500)
-        
-        if hist is None or hist.empty or len(hist) < 26:
-            logger.error(f"Insufficient historical data from tvDatafeed for {interval}")
+        if hist.empty or len(hist) < 26:
+            logger.error(f"Insufficient historical data from yfinance for {interval}")
             return None
             
-        # The columns returned by tvDatafeed are lowercase: open, high, low, close, volume
-        close_price = float(hist['close'].iloc[-1])
-        high_price = float(hist['high'].iloc[-1])
-        low_price = float(hist['low'].iloc[-1])
-        volume = float(hist['volume'].iloc[-1])
+        futures_close = float(hist['Close'].iloc[-1])
+        futures_high = float(hist['High'].iloc[-1])
+        futures_low = float(hist['Low'].iloc[-1])
+        volume = float(hist['Volume'].iloc[-1])
         
-        # We need to map them back to Capitalized for the rest of our math
-        hist = hist.rename(columns={'close': 'Close', 'high': 'High', 'low': 'Low', 'volume': 'Volume', 'open': 'Open'})
+        # 3. Calculate Spread
+        spread = futures_close - spot_price
+        logger.info(f"Gold Futures: {futures_close}, Spot Gold: {spot_price}, Spread: {spread}")
+        
+        # Adjust current candle prices
+        close_price = spot_price
+        high_price = futures_high - spread
+        low_price = futures_low - spread
         
         # SMA 20
         sma20_series = hist['Close'].rolling(window=20).mean()
-        sma20 = float(sma20_series.iloc[-1]) if not pd.isna(sma20_series.iloc[-1]) else close_price
+        sma20 = (float(sma20_series.iloc[-1]) - spread) if not pd.isna(sma20_series.iloc[-1]) else close_price
         
         # Trend Structure
         trend = "Bullish" if close_price > sma20 else "Bearish"
         
         # Bollinger Bands (20, 2)
         std20 = hist['Close'].rolling(window=20).std()
-        bb_upper = float((sma20_series + (std20 * 2)).iloc[-1]) if not pd.isna(std20.iloc[-1]) else close_price
-        bb_lower = float((sma20_series - (std20 * 2)).iloc[-1]) if not pd.isna(std20.iloc[-1]) else close_price
+        bb_upper = (float((sma20_series + (std20 * 2)).iloc[-1]) - spread) if not pd.isna(std20.iloc[-1]) else close_price
+        bb_lower = (float((sma20_series - (std20 * 2)).iloc[-1]) - spread) if not pd.isna(std20.iloc[-1]) else close_price
         
-        # RSI 14 (Wilder's Smoothing)
+        # RSI 14 (Wilder's Smoothing) - Oscillator, no adjustment needed
         delta = hist['Close'].diff()
         up = delta.clip(lower=0)
         down = -1 * delta.clip(upper=0)
@@ -68,7 +84,7 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
         rsi_series = 100 - (100 / (1 + rs))
         rsi_14 = float(rsi_series.iloc[-1]) if not pd.isna(rsi_series.iloc[-1]) else 50.0
         
-        # MACD (12, 26, 9)
+        # MACD (12, 26, 9) - Oscillator, no adjustment needed
         ema_12 = hist['Close'].ewm(span=12, adjust=False).mean()
         ema_26 = hist['Close'].ewm(span=26, adjust=False).mean()
         macd_series = ema_12 - ema_26
@@ -76,7 +92,7 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
         macd = float(macd_series.iloc[-1]) if not pd.isna(macd_series.iloc[-1]) else 0.0
         macd_signal = float(macd_signal_series.iloc[-1]) if not pd.isna(macd_signal_series.iloc[-1]) else 0.0
         
-        # ATR 14
+        # ATR 14 - Spread invariant (difference between High and Low)
         high_low = hist['High'] - hist['Low']
         high_close = (hist['High'] - hist['Close'].shift()).abs()
         low_close = (hist['Low'] - hist['Close'].shift()).abs()
@@ -85,12 +101,12 @@ def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
         atr_series = tr.rolling(window=14).mean()
         atr = float(atr_series.iloc[-1]) if not pd.isna(atr_series.iloc[-1]) else 0.0
         
-        # Swing High / Swing Low (Past 20 periods)
+        # Swing High / Swing Low (Past 20 periods) - Adjust by spread
         recent_20 = hist.tail(20)
-        swing_high = float(recent_20['High'].max())
-        swing_low = float(recent_20['Low'].min())
+        swing_high = float(recent_20['High'].max()) - spread
+        swing_low = float(recent_20['Low'].min()) - spread
         
-        # Stochastic (8, 3, 3)
+        # Stochastic (8, 3, 3) - Oscillator, no adjustment needed
         low_8 = hist['Low'].rolling(window=8).min()
         high_8 = hist['High'].rolling(window=8).max()
         fast_k = 100 * ((hist['Close'] - low_8) / (high_8 - low_8))
