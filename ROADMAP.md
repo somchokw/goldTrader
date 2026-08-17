@@ -6,6 +6,11 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛠️ Patch v1.6.3: Fix Render Deployment Missing Dependencies
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- เพิ่ม dependency ที่จำเป็นใน `requirements.txt` (`schedule`, `python-dotenv`, `requests`, `pillow`, `google-genai`)
+- แก้ไขปัญหา Render startup crash จาก `ModuleNotFoundError: No module named 'schedule'`
+
 ### 🛠️ Patch v1.6.2: Resilient Gold Price & Multi-Source News Feed
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - แก้ปัญหา `ModuleNotFoundError` จากการลบ dependency yfinance ค้างใน indicators.py และ main.py

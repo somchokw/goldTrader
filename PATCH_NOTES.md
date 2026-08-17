@@ -1,5 +1,9 @@
 # 📝 Patch Notes
 
+## v1.6.3 - 2026-08-18
+### 🛠️ Fixed
+- **Render Deployment Dependencies:** Added missing dependencies (`schedule`, `python-dotenv`, `requests`, `pillow`, `google-genai`) to `requirements.txt` to fix `ModuleNotFoundError: No module named 'schedule'` on Render startup.
+
 ## v1.6.2 - 2026-08-18
 ### 🛠️ Fixed
 - **Gold Price & Indicator Fetching:** Fixed `ModuleNotFoundError` by removing remaining `yfinance` import in `indicators.py` and `main.py`.
