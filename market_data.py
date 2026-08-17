@@ -1,9 +1,38 @@
 import logging
 from typing import List, Dict
-from curl_cffi import requests
 import xml.etree.ElementTree as ET
+try:
+    from curl_cffi import requests
+except ImportError:
+    import requests
 
 logger = logging.getLogger(__name__)
+
+def _get_request(url: str, **kwargs):
+    """Helper to perform GET requests with curl_cffi impersonation if available."""
+    headers = kwargs.pop('headers', {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+    timeout = kwargs.pop('timeout', 10)
+    req_kwargs = {'headers': headers, 'timeout': timeout, **kwargs}
+    try:
+        post_func = getattr(requests, 'get', None)
+        if post_func and hasattr(post_func, '__code__') and 'impersonate' in getattr(post_func.__code__, 'co_varnames', ()):
+            req_kwargs['impersonate'] = 'chrome110'
+    except Exception:
+        pass
+    return requests.get(url, **req_kwargs)
+
+def _post_request(url: str, **kwargs):
+    """Helper to perform POST requests with curl_cffi impersonation if available."""
+    headers = kwargs.pop('headers', {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+    timeout = kwargs.pop('timeout', 10)
+    req_kwargs = {'headers': headers, 'timeout': timeout, **kwargs}
+    try:
+        post_func = getattr(requests, 'post', None)
+        if post_func and hasattr(post_func, '__code__') and 'impersonate' in getattr(post_func.__code__, 'co_varnames', ()):
+            req_kwargs['impersonate'] = 'chrome110'
+    except Exception:
+        pass
+    return requests.post(url, **req_kwargs)
 
 def fetch_macro_data() -> Dict:
     """Fetch DXY and US 10Y Yield directly from TradingView Scanner API."""
@@ -13,12 +42,7 @@ def fetch_macro_data() -> Dict:
             'symbols': {'tickers': ['TVC:DXY', 'TVC:US10Y'], 'query': {'types': []}},
             'columns': ['close']
         }
-        r = requests.post(
-            'https://scanner.tradingview.com/global/scan', 
-            json=payload, 
-            impersonate='chrome110',
-            timeout=10
-        )
+        r = _post_request('https://scanner.tradingview.com/global/scan', json=payload, timeout=10)
         if r.status_code == 200:
             json_data = r.json()
             for item in json_data.get('data', []):
@@ -26,9 +50,9 @@ def fetch_macro_data() -> Dict:
                 close_price = item.get('d', [None])[0]
                 
                 if symbol == 'TVC:DXY':
-                    data['dxy_close'] = float(close_price) if close_price else None
+                    data['dxy_close'] = float(close_price) if close_price is not None else None
                 elif symbol == 'TVC:US10Y':
-                    data['us10y_yield'] = float(close_price) if close_price else None
+                    data['us10y_yield'] = float(close_price) if close_price is not None else None
         else:
             logger.error(f"TradingView Scanner returned status {r.status_code}")
             data['dxy_close'] = None
@@ -40,35 +64,51 @@ def fetch_macro_data() -> Dict:
         
     return data
 
-def fetch_gold_news() -> str:
-    """Fetch latest gold news from Investing.com RSS feed."""
+def _fetch_rss_news(url: str, source_name: str) -> List[str]:
+    """Helper to fetch and parse RSS feeds."""
     try:
-        r = requests.get(
-            'https://www.investing.com/rss/news_11.rss',
-            impersonate='chrome110',
-            timeout=10
-        )
-        
+        r = _get_request(url, timeout=10)
         if r.status_code != 200:
-            return "ไม่สามารถโหลดข่าวสารล่าสุดได้ในขณะนี้"
-            
+            logger.warning(f"Failed to fetch RSS from {source_name}, status: {r.status_code}")
+            return []
+
         root = ET.fromstring(r.text)
         news_items = []
-        
         for item in root.findall('./channel/item')[:5]:
             title = item.find('title').text if item.find('title') is not None else "No Title"
             pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ""
             link = item.find('link').text if item.find('link') is not None else ""
-            
-            # Format pubDate if necessary, but Investing.com gives standard RSS format
             news_items.append(f"• {title}\n  Date: {pub_date}\n  URL: {link}\n")
             
-        if not news_items:
-             return "No valid news titles found."
-             
-        news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(news_items)])
-        return f"ข่าวล่าสุดเกี่ยวกับทองคำ (อ้างอิงจาก Investing.com):\n{news_summary}"
-        
+        return news_items
     except Exception as e:
-        logger.error(f"Error fetching gold news from RSS: {e}")
-        return f"Error fetching news: {e}"
+        logger.warning(f"Error parsing RSS from {source_name}: {e}")
+        return []
+
+def fetch_gold_news() -> str:
+    """Fetch latest gold news with multi-source fallback (Google News RSS & Investing.com RSS)."""
+    # Source 1: Google News RSS for Gold / XAUUSD
+    try:
+        news_items = _fetch_rss_news(
+            'https://news.google.com/rss/search?q=gold+price+XAUUSD&hl=en-US&gl=US&ceid=US:en',
+            'Google News'
+        )
+        if news_items:
+            news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(news_items)])
+            return f"ข่าวล่าสุดเกี่ยวกับทองคำ (Google News):\n{news_summary}"
+    except Exception as e:
+        logger.warning(f"Error fetching gold news from Google News RSS: {e}")
+
+    # Source 2: Investing.com RSS
+    try:
+        news_items = _fetch_rss_news(
+            'https://www.investing.com/rss/news_11.rss',
+            'Investing.com'
+        )
+        if news_items:
+            news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(news_items)])
+            return f"ข่าวล่าสุดเกี่ยวกับทองคำ (Investing.com):\n{news_summary}"
+    except Exception as e:
+        logger.warning(f"Error fetching gold news from Investing.com RSS: {e}")
+
+    return "ไม่สามารถโหลดข่าวสารล่าสุดได้ในขณะนี้"

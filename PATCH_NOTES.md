@@ -1,6 +1,11 @@
 # 📝 Patch Notes
 
-## v1.4.7 - 2026-08-11
+## v1.6.2 - 2026-08-18
+### 🛠️ Fixed
+- **Gold Price & Indicator Fetching:** Fixed `ModuleNotFoundError` by removing remaining `yfinance` import in `indicators.py` and `main.py`.
+- **Multi-Endpoint Binance Fallbacks:** Added fallbacks (`api.binance.com`, `data-api.binance.vision`, `api.binance.us`) for robust PAXGUSDT OHLCV and Spot Gold spread calculation across all hosting providers.
+- **Resilient Gold News Feed:** Implemented multi-source RSS fallback (Google News RSS & Investing.com RSS) to ensure gold news is always reliably retrieved.
+- **Model Validation:** Fixed missing default for `take_profit_2` in `TradePlan` model and updated test suites.
 ### Added
 - **Pending Order Support:** AI now extracts `order_status` (ACTIVE or PENDING) from images.
 - **Thai Translations:** Action outputs (HOLD, CLOSE, RAISE_SL) are now translated to Thai for clarity.

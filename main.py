@@ -28,8 +28,6 @@ def setup_logging():
     # Suppress verbose third party logs
     logging.getLogger("discord").setLevel(logging.WARNING)
     logging.getLogger("discord").addFilter(CloudflareHTMLFilter())
-    logging.getLogger("yfinance").setLevel(logging.WARNING)
-    logging.getLogger("yfinance").addFilter(CloudflareHTMLFilter())
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
 

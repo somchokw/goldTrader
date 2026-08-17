@@ -6,6 +6,13 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛠️ Patch v1.6.2: Resilient Gold Price & Multi-Source News Feed
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- แก้ปัญหา `ModuleNotFoundError` จากการลบ dependency yfinance ค้างใน indicators.py และ main.py
+- เสริมระบบดึงราคาทองคำ Spot Gold และ Binance OHLCV ให้มี Multi-Endpoint Fallbacks
+- เสริมระบบดึงข่าวสารทองคำด้วย Google News RSS + Investing.com RSS ป้องกันปัญหาข่าวไม่โหลด
+- แก้ไข Pydantic `TradePlan` model ให้ `take_profit_2` เป็น optional พร้อมอัปเดต Unit Tests ทั้งหมด
+
 ### 🛠️ Patch v1.1: The Indicator Expansion
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - เพิ่ม `pandas-ta` สำหรับการคำนวณ Indicator ระดับสูง (MACD, Bollinger Bands, RSI)

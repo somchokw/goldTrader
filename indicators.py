@@ -1,7 +1,11 @@
 import logging
 from datetime import datetime, timezone
-import yfinance as yf
-from curl_cffi import requests
+from typing import Optional
+try:
+    from curl_cffi import requests
+except ImportError:
+    import requests
+
 from config import SYMBOL
 from models import MarketSnapshot
 import pandas as pd
@@ -9,45 +13,70 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-def get_spot_gold_price() -> float:
-    """Fetch real-time Spot Gold (TVC:GOLD) price bypassing Cloudflare using curl_cffi."""
+def _get_request(url: str, **kwargs):
+    """Helper to perform GET requests with curl_cffi impersonation if available."""
+    headers = kwargs.pop('headers', {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+    timeout = kwargs.pop('timeout', 10)
+    req_kwargs = {'headers': headers, 'timeout': timeout, **kwargs}
+    if hasattr(requests, 'get') and 'impersonate' in requests.get.__code__.co_varnames:
+        req_kwargs['impersonate'] = 'chrome110'
+    return requests.get(url, **req_kwargs)
+
+def _post_request(url: str, **kwargs):
+    """Helper to perform POST requests with curl_cffi impersonation if available."""
+    headers = kwargs.pop('headers', {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+    timeout = kwargs.pop('timeout', 10)
+    req_kwargs = {'headers': headers, 'timeout': timeout, **kwargs}
+    if hasattr(requests, 'post') and 'impersonate' in requests.post.__code__.co_varnames:
+        req_kwargs['impersonate'] = 'chrome110'
+    return requests.post(url, **req_kwargs)
+
+def get_spot_gold_price() -> Optional[float]:
+    """Fetch real-time Spot Gold price from TradingView scanner API."""
     try:
         data = {
-            'symbols': {'tickers': ['TVC:GOLD'], 'query': {'types': []}},
+            'symbols': {'tickers': ['TVC:GOLD', 'OANDA:XAUUSD', 'FOREXCOM:XAUUSD'], 'query': {'types': []}},
             'columns': ['close']
         }
-        r = requests.post(
-            'https://scanner.tradingview.com/global/scan', 
-            json=data, 
-            impersonate='chrome110',
-            timeout=10
-        )
+        r = _post_request('https://scanner.tradingview.com/global/scan', json=data, timeout=10)
         if r.status_code == 200:
             json_data = r.json()
-            if 'data' in json_data and len(json_data['data']) > 0:
-                return float(json_data['data'][0]['d'][0])
+            for item in json_data.get('data', []):
+                close_val = item.get('d', [None])[0]
+                if close_val is not None:
+                    return float(close_val)
     except Exception as e:
         logger.error(f"Failed to fetch Spot Gold price from TradingView scanner: {e}")
     return None
 
-def fetch_technical_data(interval: str, period: str = None) -> MarketSnapshot:
+def fetch_technical_data(interval: str, period: str = None) -> Optional[MarketSnapshot]:
     """Fetch technical data using Binance (PAXG) and adjust to Spot Gold price."""
     try:
         # 1. Fetch real Spot Gold price
         spot_price = get_spot_gold_price()
         
-        # 2. Fetch Gold proxy (PAXGUSDT) history for indicators (never blocked)
+        # 2. Fetch Gold proxy (PAXGUSDT) history for indicators with multiple endpoint fallbacks
         binance_interval = "15m" if interval == "15m" else "1d"
-        url = f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500"
+        binance_endpoints = [
+            f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500",
+            f"https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500",
+            f"https://api.binance.us/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500"
+        ]
         
-        # Use curl_cffi to spoof browser and bypass Cloudflare for Binance API
-        r = requests.get(url, impersonate='chrome110', timeout=10)
-        
-        if r.status_code != 200:
-            logger.error(f"Failed to fetch Binance data (Status {r.status_code}): {r.text[:200]}...")
-            return None
-            
-        data = r.json()
+        data = None
+        for ep in binance_endpoints:
+            try:
+                r = _get_request(ep, timeout=10)
+                if r.status_code == 200:
+                    json_res = r.json()
+                    if isinstance(json_res, list) and len(json_res) >= 26:
+                        data = json_res
+                        break
+                else:
+                    logger.warning(f"Binance endpoint {ep} returned status {r.status_code}")
+            except Exception as ep_err:
+                logger.warning(f"Error fetching from Binance endpoint {ep}: {ep_err}")
+
         if not data or len(data) < 26:
             logger.error(f"Insufficient historical data from Binance for {interval}")
             return None

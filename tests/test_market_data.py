@@ -1,61 +1,43 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from market_data import fetch_gold_news
+from market_data import fetch_gold_news, fetch_macro_data
 
-@patch("market_data.yf.Ticker")
-def test_fetch_gold_news_new_schema(mock_ticker):
-    mock_gold = MagicMock()
-    # New yfinance schema puts stuff inside 'content'
-    mock_gold.news = [
-        {
-            "content": {
-                "title": "Gold hits record high",
-                "provider": {"displayName": "Reuters"},
-                "pubDate": "2024-01-01T12:00:00Z",
-                "clickThroughUrl": "http://example.com/news1"
-            }
-        }
+@patch("market_data._fetch_rss_news")
+def test_fetch_gold_news_success(mock_fetch):
+    mock_fetch.return_value = [
+        "• Gold hits record high\n  Date: 2026-08-18\n  URL: http://example.com/gold1\n"
     ]
-    mock_ticker.return_value = mock_gold
-    
     result = fetch_gold_news()
     assert "Gold hits record high" in result
-    assert "Reuters" in result
-    assert "http://example.com/news1" in result
+    assert "http://example.com/gold1" in result
 
-@patch("market_data.yf.Ticker")
-def test_fetch_gold_news_old_schema(mock_ticker):
-    mock_gold = MagicMock()
-    # Old yfinance schema
-    mock_gold.news = [
-        {
-            "title": "Gold price falls",
-            "publisher": "Bloomberg",
-            "pubDate": "2024-01-02T12:00:00Z",
-            "link": "http://example.com/news2"
-        }
+@patch("market_data._fetch_rss_news")
+def test_fetch_gold_news_fallback_when_first_empty(mock_fetch):
+    # First call returns empty, second call returns news
+    mock_fetch.side_effect = [
+        [],
+        ["• Gold surges on inflation data\n  Date: 2026-08-18\n  URL: http://example.com/gold2\n"]
     ]
-    mock_ticker.return_value = mock_gold
-    
     result = fetch_gold_news()
-    assert "Gold price falls" in result
-    assert "Bloomberg" in result
-    assert "http://example.com/news2" in result
+    assert "Gold surges on inflation data" in result
 
-@patch("market_data.yf.Ticker")
-def test_fetch_gold_news_no_title(mock_ticker):
-    mock_gold = MagicMock()
-    # Malformed news
-    mock_gold.news = [
-        {
-            "content": {
-                "provider": {"displayName": "Reuters"},
-                "pubDate": "2024-01-01T12:00:00Z",
-                "clickThroughUrl": "http://example.com/news1"
-            }
-        }
-    ]
-    mock_ticker.return_value = mock_gold
-    
+@patch("market_data._fetch_rss_news")
+def test_fetch_gold_news_all_failed(mock_fetch):
+    mock_fetch.return_value = []
     result = fetch_gold_news()
-    assert "No valid news titles found" in result
+    assert "ไม่สามารถโหลดข่าวสารล่าสุดได้ในขณะนี้" in result
+
+@patch("market_data.requests.post")
+def test_fetch_macro_data_success(mock_post):
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "data": [
+            {"s": "TVC:DXY", "d": [104.5]},
+            {"s": "TVC:US10Y", "d": [4.25]}
+        ]
+    }
+    mock_post.return_value = mock_resp
+    data = fetch_macro_data()
+    assert data.get("dxy_close") == 104.5
+    assert data.get("us10y_yield") == 4.25

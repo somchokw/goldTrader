@@ -27,7 +27,7 @@ class TradePlan(BaseModel):
     exact_entry_price: float = Field(description="The exact recommended entry price to execute the trade.")
     stop_loss: float = Field(description="The exact stop loss price. Must be logically placed (below entry for BUY, above for SELL).")
     take_profit_1: float = Field(description="The primary target profit price.")
-    take_profit_2: float = Field(description="An optional secondary target profit price (can be same as TP1 if not applicable).")
+    take_profit_2: Optional[float] = Field(None, description="An optional secondary target profit price (can be same as TP1 if not applicable).")
     rationale: str = Field(description="A comprehensive explanation of the trade setup in Thai, referencing technicals, macro, and risk parameters.")
 
     @field_validator('action')
