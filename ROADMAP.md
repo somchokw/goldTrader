@@ -6,6 +6,11 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛠️ Patch v1.6.4: Fix Render Cold-Start & Keep-Alive 502/503
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- ปรับจังหวะการเปิด Flask server (`keep_alive()`) ให้รันทันทีที่เริ่มโปรแกรม ก่อนโหลดโมดูลหนัก (CrewAI, LangChain, Discord)
+- เพิ่ม endpoint `/health`, `/ping`, `/healthz` เพื่อให้ cron-job.org หรือ Render health check ตอบสนอง 200 OK ได้ทันที ป้องกัน 502/503 Service Unavailable
+
 ### 🛠️ Patch v1.6.3: Fix Render Deployment Missing Dependencies
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - เพิ่ม dependency ที่จำเป็นใน `requirements.txt` (`schedule`, `python-dotenv`, `requests`, `pillow`, `google-genai`)

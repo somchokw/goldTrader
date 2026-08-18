@@ -1,17 +1,20 @@
-from flask import Flask
+from flask import Flask, jsonify
 from threading import Thread
 import logging
+import os
 
-app = Flask('')
+app = Flask(__name__)
 
 @app.route('/')
+@app.route('/health')
+@app.route('/ping')
+@app.route('/healthz')
 def home():
-    return "I'm alive! Gold Trading AI is running."
+    return "I'm alive! Gold Trading AI is running.", 200
 
 def run():
-    # Render requires binding to 0.0.0.0 and defaults to port 10000, but they read from PORT env var.
-    import os
-    port = int(os.environ.get("PORT", 8080))
+    # Render binds to 0.0.0.0 and injects PORT env variable (default 10000)
+    port = int(os.environ.get("PORT", 10000))
     # Disable flask output to avoid spam
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
@@ -22,3 +25,4 @@ def keep_alive():
     # daemon thread will close automatically when the main program exits
     t.daemon = True 
     t.start()
+

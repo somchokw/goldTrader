@@ -1,5 +1,10 @@
 # 📝 Patch Notes
 
+## v1.6.4 - 2026-08-18
+### 🛠️ Fixed
+- **Instant Web Health Check & Keep-Alive:** Moved `keep_alive()` to run immediately at entry point in `main.py` before importing heavy modules (CrewAI, LangChain, Discord) so that Render and cron-job.org health checks receive an instant 200 OK without timing out (preventing 502/503 Service Unavailable).
+- **Added Health Endpoints:** Added `/health`, `/ping`, `/healthz` endpoints to `keep_alive.py` with default port 10000.
+
 ## v1.6.3 - 2026-08-18
 ### 🛠️ Fixed
 - **Render Deployment Dependencies:** Added missing dependencies (`schedule`, `python-dotenv`, `requests`, `pillow`, `google-genai`) to `requirements.txt` to fix `ModuleNotFoundError: No module named 'schedule'` on Render startup.

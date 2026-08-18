@@ -1,8 +1,13 @@
 import logging
 import sys
 import re
-from bot import run_bot
+
+# Start Flask keep-alive server immediately before any heavy imports
+# This ensures Render and cron-job.org health checks get an instant 200 OK without timing out during heavy CrewAI/Discord imports.
 from keep_alive import keep_alive
+keep_alive()
+
+from bot import run_bot
 
 class CloudflareHTMLFilter(logging.Filter):
     """Filter out massive Cloudflare HTML dumps from discord.py logs."""
@@ -33,5 +38,4 @@ def setup_logging():
 
 if __name__ == "__main__":
     setup_logging()
-    keep_alive()
     run_bot()
