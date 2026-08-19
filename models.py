@@ -24,6 +24,7 @@ class MarketSnapshot(BaseModel):
 
 class TradePlan(BaseModel):
     action: str = Field(description="Must be exactly one of: 'BUY', 'SELL', 'WAIT'")
+    trade_style: Optional[str] = Field("ไม้สั้น (Intraday/Scalp)", description="The trade style classification: e.g. 'ไม้สั้น (Scalp/Intraday)' or 'ไม้ยาว (Swing/Trend)'")
     exact_entry_price: float = Field(description="The exact recommended entry price to execute the trade.")
     stop_loss: float = Field(description="The exact stop loss price. Must be logically placed (below entry for BUY, above for SELL).")
     take_profit_1: float = Field(description="The primary target profit price.")

@@ -1,5 +1,10 @@
 # 📝 Patch Notes
 
+## v1.6.6 - 2026-08-19
+### 🚀 Enhanced
+- **Short-term (Scalp) & Long-term (Swing) Instant Signal Trigger:** ปรับจูน Prompt ของ Chief Gold Trader ให้สแกนและส่งสัญญาณเทรดทันทีเมื่อพบโอกาส ทั้งไม้สั้น (15m Scalp/Intraday ดักการกลับตัวตาม Stochastic/RSI/BB) และไม้ยาว (Daily/Swing รันเทรนด์ตามโครงสร้างใหญ่) โดยไม่ต้องรอให้เงื่อนไขสุดโต่ง (Extreme) ครบทุกข้อ
+- **Trade Style Tagging:** เพิ่มฟิลด์ `trade_style` ใน `TradePlan` และแสดงผลในข้อความแจ้งเตือน Discord ว่าเป็นไม้สั้นหรือไม้ยาวอย่างชัดเจน
+
 ## v1.6.5 - 2026-08-19
 ### 🛠️ Fixed
 - **Keep-Alive Multi-Method & Response Headers:** Added support for `HEAD`, `POST`, `OPTIONS` along with `GET` on `/`, `/health`, `/ping`, `/healthz`, with JSON content-negotiation and explicit threaded execution to ensure external pingers (cron-job.org, UptimeRobot) receive reliable 200 OK responses.

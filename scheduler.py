@@ -52,8 +52,10 @@ def run_trading_cycle(is_routine: bool = False):
 
         # It's a BUY/SELL signal
         final_message = f"🚨 **Trade Signal Detected!** 🚨\n\n" if not is_routine else f"📊 **Routine Market Update (มีสัญญาณเข้าเทรด!)**\n\n"
-        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.4.5 Dual-Scheduler)\n"
+        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.6.6)\n"
         final_message += f"**Action:** {trade_plan.action}\n"
+        if getattr(trade_plan, 'trade_style', None):
+            final_message += f"**รูปแบบแผน:** {trade_plan.trade_style}\n"
         
         if trade_plan.action != "WAIT":
             final_message += f"**Entry:** {trade_plan.exact_entry_price}\n"

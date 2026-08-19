@@ -89,11 +89,17 @@ def create_gold_crew():
         description=(
             "Based on the macro sentiment and technical analysis, decide the final trade action for Spot Gold (XAUUSD).\n"
             "You MUST output the result matching the Pydantic TradePlan schema EXACTLY.\n"
-            "CRITICAL SNIPER RULES:\n"
-            "1. To BUY: Price MUST be near 'swing_low' OR 'bb_lower'. AND 'rsi_14' < 40. AND 'stoch_k' must be crossing above 'stoch_d' in oversold area (< 20).\n"
-            "2. To SELL: Price MUST be near 'swing_high' OR 'bb_upper'. AND 'rsi_14' > 60. AND 'stoch_k' must be crossing below 'stoch_d' in overbought area (> 80).\n"
-            "3. If conditions are not strictly met, output 'WAIT'. Do not force a trade.\n"
-            "4. Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance)."
+            "SIGNAL EXECUTION RULES (Scan for both SHORT-TERM and LONG-TERM opportunities):\n"
+            "1. Analyze both 15m (Intraday/Scalp) and 1d (Daily/Swing) structures.\n"
+            "2. BUY OPPORTUNITY (ไม้สั้นหรือไม้ยาว):\n"
+            "   - ไม้สั้น (Scalp/Intraday): เกิดสัญญาณกลับตัวใน 15m เช่น Stochastic (< 30) ตัดขึ้น, RSI เริ่มฟื้นตัวจากโซนล่าง/BB Lower, หรือ Pullback ทดสอบแนวรับย่อย/เส้นค่าเฉลี่ย\n"
+            "   - ไม้ยาว (Swing/Trend): กราฟภาพรวมเป็น Bullish หรือ Breakout เหนือแนวต้านสำคัญ โดยตั้งเป้า TP รันเทรนด์ตามแนวต้านใหญ่\n"
+            "3. SELL OPPORTUNITY (ไม้สั้นหรือไม้ยาว):\n"
+            "   - ไม้สั้น (Scalp/Intraday): เกิดสัญญาณกลับตัวลงใน 15m เช่น Stochastic (> 70) ตัดลง, RSI ติดโซนบน/BB Upper, หรือ Rejection ที่แนวต้านย่อย\n"
+            "   - ไม้ยาว (Swing/Trend): กราฟภาพรวมเป็น Bearish หรือ Breakdown ใต้แนวรับสำคัญ โดยตั้งเป้า TP ตามแนวรับใหญ่\n"
+            "4. Whenever there is a valid setup for either short-term (Scalp) or long-term (Swing), output 'BUY' or 'SELL' IMMEDIATELY and specify 'trade_style'.\n"
+            "5. Only output 'WAIT' if the market has zero momentum and no actionable setup.\n"
+            "6. Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance)."
         ),
         expected_output="A JSON object conforming strictly to the TradePlan schema.",
         agent=chief_trader,

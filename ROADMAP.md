@@ -6,6 +6,11 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🚀 Patch v1.6.6: Short-term & Long-term Instant Signals
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- ปรับเงื่อนไขการออกสัญญาณเทรดของ AI ให้ยืดหยุ่นและตอบสนองไวยิ่งขึ้น: เมื่อพบจังหวะเทรดไม่ว่าจะเป็นไม้สั้น (Scalp/Intraday) หรือไม้ยาว (Swing/Trend) ระบบจะส่งสัญญาณ BUY/SELL ทันที
+- ระบุประเภทไม้ (`ไม้สั้น` หรือ `ไม้ยาว`) ลงในข้อความแจ้งเตือนอย่างชัดเจน
+
 ### 🛠️ Patch v1.6.5: Keep-Alive Multi-Method & Discord Gateway Concurrency Lock
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - ปรับ `keep_alive.py` ให้รองรับ HTTP Methods ทุกแบบ (`GET`, `HEAD`, `POST`, `OPTIONS`) และรองรับ JSON headers เพื่อให้ cron-job.org / ping monitoring ตอบสนอง 200 OK ได้แน่นอน
