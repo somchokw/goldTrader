@@ -6,6 +6,12 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛠️ Patch v1.6.5: Keep-Alive Multi-Method & Discord Gateway Concurrency Lock
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- ปรับ `keep_alive.py` ให้รองรับ HTTP Methods ทุกแบบ (`GET`, `HEAD`, `POST`, `OPTIONS`) และรองรับ JSON headers เพื่อให้ cron-job.org / ping monitoring ตอบสนอง 200 OK ได้แน่นอน
+- เพิ่ม `asyncio.Lock()` ใน `bot.py` ป้องกัน `routine_loop` และ `scanner_loop` รันซ้อนกันตอนเริ่มระบบ ลดภาระ RAM/CPU ไม่ให้ Discord Gateway หลุด
+- เพิ่มความยืดหยุ่นของคำสั่ง `#check`, `#checkgold`, `!check`, `/check` พร้อมตัด Mention Prefix ออกอัตโนมัติ
+
 ### 🛠️ Patch v1.6.4: Fix Render Cold-Start & Keep-Alive 502/503
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - ปรับจังหวะการเปิด Flask server (`keep_alive()`) ให้รันทันทีที่เริ่มโปรแกรม ก่อนโหลดโมดูลหนัก (CrewAI, LangChain, Discord)

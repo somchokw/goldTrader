@@ -54,14 +54,17 @@ def save_feedback(user_id, user_name, score, is_auto=False):
         del waiting_for_feedback[user_id]
     return True
 
+trade_lock = asyncio.Lock()
+
 @tasks.loop(hours=4)
 async def routine_loop():
     global last_auto_plan
     try:
         logger.info("Running Routine Market Update (4 Hours) via Discord loop.")
-        plan = await asyncio.to_thread(run_trading_cycle, True)
-        if plan and plan.action != "WAIT":
-            last_auto_plan = plan
+        async with trade_lock:
+            plan = await asyncio.to_thread(run_trading_cycle, True)
+            if plan and plan.action != "WAIT":
+                last_auto_plan = plan
     except Exception as e:
         logger.error(f"Error in routine_loop: {e}")
 
@@ -70,9 +73,13 @@ async def scanner_loop():
     global last_auto_plan
     try:
         logger.info("Running Sniper Scanner (15 Minutes) via Discord loop.")
-        plan = await asyncio.to_thread(run_trading_cycle, False)
-        if plan and plan.action != "WAIT":
-            last_auto_plan = plan
+        if trade_lock.locked():
+            logger.info("Trade cycle already in progress. Skipping this scanner tick.")
+            return
+        async with trade_lock:
+            plan = await asyncio.to_thread(run_trading_cycle, False)
+            if plan and plan.action != "WAIT":
+                last_auto_plan = plan
     except Exception as e:
         logger.error(f"Error in scanner_loop: {e}")
 
@@ -83,6 +90,8 @@ async def before_routine_loop():
 @scanner_loop.before_loop
 async def before_scanner_loop():
     await client.wait_until_ready()
+    # Stagger scanner loop so it doesn't collide with routine loop on startup
+    await asyncio.sleep(60)
 
 @client.event
 async def on_ready():
@@ -99,17 +108,22 @@ async def on_message(message):
 
     logger.info(f"Received message from {message.author}: {message.content} (Attachments: {len(message.attachments)})")
 
-    # [DEBUG] Reply if mentioned to verify bot is alive
-    if client.user in message.mentions:
-        await message.reply(f"🤖 บอทยังทำงานอยู่ครับ! (Patch 1.5.2) \nจำนวนรูปภาพที่แนบมา: {len(message.attachments)}")
-        
-    # Command: #check
-    if message.content.strip().lower() == "#check":
-        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม!")
+    # Clean message text by stripping bot mention if present
+    content = message.content.strip()
+    if client.user:
+        mention_patterns = [f"<@{client.user.id}>", f"<@!{client.user.id}>"]
+        for pattern in mention_patterns:
+            content = content.replace(pattern, "").strip()
+    
+    cmd = content.lower()
+
+    # Command: #check, !check, /check, $check, or 'check'
+    if cmd in ["#check", "!check", "/check", "$check", "check"]:
+        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.6.5)")
         return
 
-    # Command: #checkgold
-    if message.content.strip().lower() == "#checkgold":
+    # Command: #checkgold, !checkgold, /checkgold, $checkgold, or 'checkgold'
+    if cmd in ["#checkgold", "!checkgold", "/checkgold", "$checkgold", "checkgold"]:
         await message.reply("🔄 กำลังดึงข้อมูลราคาทองคำและสถิติทางเทคนิคล่าสุด โปรดรอสักครู่...")
         try:
             from indicators import fetch_technical_data
@@ -135,6 +149,17 @@ async def on_message(message):
         except Exception as e:
             logger.error(f"Error checking gold price: {e}", exc_info=True)
             await message.reply(f"❌ เกิดข้อผิดพลาดในการดึงข้อมูล: {str(e)}")
+        return
+
+    # Reply if mentioned without specific command
+    if client.user in message.mentions and not message.attachments:
+        await message.reply(
+            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.6.5)\n"
+            "คำสั่งที่ใช้งานได้:\n"
+            "• `#check` : ตรวจสอบสถานะการเชื่อมต่อของบอท\n"
+            "• `#checkgold` : ดึงข้อมูลราคาทองคำและ Indicator ทางเทคนิคล่าสุด (15m)\n"
+            "• หรือแนบรูปภาพพอร์ต/กราฟ เพื่อให้ AI ช่วยวิเคราะห์ไม้เทรดได้ทันทีครับ"
+        )
         return
 
     # 1. Check for feedback rating (0-10)

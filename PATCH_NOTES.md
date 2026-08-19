@@ -1,5 +1,11 @@
 # 📝 Patch Notes
 
+## v1.6.5 - 2026-08-19
+### 🛠️ Fixed
+- **Keep-Alive Multi-Method & Response Headers:** Added support for `HEAD`, `POST`, `OPTIONS` along with `GET` on `/`, `/health`, `/ping`, `/healthz`, with JSON content-negotiation and explicit threaded execution to ensure external pingers (cron-job.org, UptimeRobot) receive reliable 200 OK responses.
+- **Discord Bot Concurrency & Startup Lock:** Added `asyncio.Lock()` around CrewAI kickoff loops to prevent `routine_loop` and `scanner_loop` from running heavy AI crews simultaneously on startup, eliminating CPU/RAM throttling and gateway heartbeat disconnects.
+- **Flexible Command & Mention Handling:** Added flexible command aliases (`#check`, `!check`, `/check`, `$check`, `check`, `#checkgold`, `!checkgold`, etc.) and cleaned mention tag stripping in `on_message` so the bot responds reliably even when mentioned.
+
 ## v1.6.4 - 2026-08-18
 ### 🛠️ Fixed
 - **Instant Web Health Check & Keep-Alive:** Moved `keep_alive()` to run immediately at entry point in `main.py` before importing heavy modules (CrewAI, LangChain, Discord) so that Render and cron-job.org health checks receive an instant 200 OK without timing out (preventing 502/503 Service Unavailable).

@@ -1,15 +1,21 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from threading import Thread
 import logging
 import os
 
 app = Flask(__name__)
 
-@app.route('/')
-@app.route('/health')
-@app.route('/ping')
-@app.route('/healthz')
+@app.route('/', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])
+@app.route('/health', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])
+@app.route('/ping', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])
+@app.route('/healthz', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])
 def home():
+    if request.headers.get('Accept') == 'application/json':
+        return jsonify({
+            "status": "ok",
+            "service": "Gold Trading AI",
+            "message": "I'm alive!"
+        }), 200
     return "I'm alive! Gold Trading AI is running.", 200
 
 def run():
@@ -18,7 +24,7 @@ def run():
     # Disable flask output to avoid spam
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, threaded=True)
 
 def keep_alive():
     t = Thread(target=run)
