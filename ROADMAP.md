@@ -6,6 +6,11 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🎯 Patch v1.7.0: Strict Real-Time Price Enforcement (Anti-Hallucination)
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- กำชับคำสั่งและ Backstory ของ Chief Gold Trader ให้ใช้ราคา Spot Gold จาก Data Tool สดๆ (4,500+ USD) ห้ามอิงราคาเก่าในความจำโมเดล (2,000–2,400 USD)
+- ป้องกันปัญหาแผนเทรดมีตัวเลขราคาไม่ตรงกับราคาตลาดปัจจุบัน
+
 ### 🚀 Patch v1.6.9: Real-Time Spot Gold, Fresh News Feed & Slash Commands
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - เชื่อมต่อ Live Spot Gold Feed จาก Swissquote และ Yahoo Finance ทำให้ได้ราคาทองคำปัจจุบันสดใหม่อยู่เสมอ

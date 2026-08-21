@@ -61,7 +61,11 @@ def create_gold_crew(model_name: str = None):
     chief_trader = Agent(
         role="Chief Gold Trader",
         goal="นำข้อมูลทั้งหมดจาก Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดขั้นสุดท้าย โดยต้องคุม Risk/Reward ให้คุ้มค่า",
-        backstory="คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ คุณมีกฎการเทรดที่เข้มงวดและจะไม่เปิดออเดอร์มั่วซั่ว คุณเป็นผู้ตัดสินใจขั้นเด็ดขาดว่าควรเทรดหรือไม่",
+        backstory=(
+            "คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ\n"
+            "กฎเหล็กเรื่องราคา: คุณต้องใช้ตัวเลขราคาตลาดสดปัจจุบัน (Current Price) จาก Tool 'Fetch Technical Data' (ซึ่งอยู่ในระดับ 4,000+ USD) เท่านั้น\n"
+            "ห้ามจำหรือเดาราคาเก่าในอดีต (เช่น 1,900 - 2,400 USD) โดยเด็ดขาด ทุกจุดเข้า Entry, SL, TP ต้องอ้างอิงจากราคาปัจจุบันในกราฟ 15m ล่าสุดเท่านั้น"
+        ),
         verbose=True,
         allow_delegation=False,
         llm=current_llm
@@ -94,6 +98,10 @@ def create_gold_crew(model_name: str = None):
         description=(
             "Based on the macro sentiment and technical analysis, decide the final trade action for Spot Gold (XAUUSD).\n"
             "You MUST output the result matching the Pydantic TradePlan schema EXACTLY.\n"
+            "CRITICAL REAL-TIME PRICE REQUIREMENT:\n"
+            "- Check the exact 'close_price' in the 15m Data from 'Fetch Technical Data' (around $4,500 - $4,700+).\n"
+            "- All trade prices ('exact_entry_price', 'stop_loss', 'take_profit_1', 'take_profit_2') MUST be located directly around the current 15m close price.\n"
+            "- NEVER use or hallucinate outdated historical gold prices (e.g. 1900-2400 USD).\n\n"
             "SIGNAL EXECUTION RULES (Scan for both SHORT-TERM and LONG-TERM opportunities):\n"
             "1. Analyze both 15m (Intraday/Scalp) and 1d (Daily/Swing) structures.\n"
             "2. BUY OPPORTUNITY (ไม้สั้นหรือไม้ยาว):\n"

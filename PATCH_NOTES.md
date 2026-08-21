@@ -1,5 +1,10 @@
 # 📝 Patch Notes
 
+## v1.7.0 - 2026-08-21
+### 🎯 Price Accuracy & Anti-Hallucination
+- **Strict Real-Time Price Enforcement (4,500+ USD):** ล็อกกฎเหล็กใน Agent Backstory และ Trader Task ให้ใช้ตัวเลข `close_price` ปัจจุบันจากกราฟ 15m (ระดับ 4,500+ USD) เท่านั้น ห้าม AI หลอนหรือนำตัวเลขเก่าในหน่วยความจำ (2,000–2,400 USD) มาใช้ออกแผนเทรดเด็ดขาด
+- **Live Spot Gold Validation:** กำหนดให้จุด Entry, SL, TP สัมพันธ์กับราคา Spot Gold ณ ปัจจุบัน 100%
+
 ## v1.6.9 - 2026-08-21
 ### 🚀 Enhanced & Fixed
 - **Real-Time Institutional Spot Gold Feed:** ย้ายระบบดึงราคาทองคำ Spot Gold มาใช้ Swissquote Institutional Live Feed + Yahoo Finance GC=F ทำให้ได้ราคา Spot Gold ปัจจุบันที่แม่นยำและสดใหม่อยู่เสมอ
