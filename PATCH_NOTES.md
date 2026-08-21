@@ -1,5 +1,12 @@
 # 📝 Patch Notes
 
+## v1.6.9 - 2026-08-21
+### 🚀 Enhanced & Fixed
+- **Real-Time Institutional Spot Gold Feed:** ย้ายระบบดึงราคาทองคำ Spot Gold มาใช้ Swissquote Institutional Live Feed + Yahoo Finance GC=F ทำให้ได้ราคา Spot Gold ปัจจุบันที่แม่นยำและสดใหม่อยู่เสมอ
+- **Real-Time Gold News Filtering:** ปรับจูน Google News RSS ดึงเฉพาะข่าวสารทองคำและ XAUUSD ภายใน 24 ชม. ล่าสุด (`when:1d`) พร้อมเสริม FXStreet News RSS
+- **Discord Native Slash Commands (`/check` & `/checkgold`):** เพิ่ม Discord Slash Commands เต็มรูปแบบ ซิงค์คำสั่งอัตโนมัติเมื่อบอทออนไลน์ ทำให้พิมพ์ `/check` และ `/checkgold` ได้โดยตรง และทำงานได้แม้เซิร์ฟเวอร์ไม่ได้เปิด Message Content Intent
+- **Forgiving Text Command Matching:** ปรับปรุง `on_message` ให้รองรับคำสั่ง `#check`, `!check`, `check`, `checkgold`, `@bot check` ทุกรูปแบบ
+
 ## v1.6.8 - 2026-08-21
 ### 🛠️ Fixed
 - **Gemini Model 404 Resolution & Multi-Model Dynamic Fallbacks:** แก้ปัญหา `404 NOT_FOUND` จาก Google Gemini v1beta โดยเปลี่ยนโมเดลหลักเป็น `gemini-2.0-flash` และเพิ่มระบบ Auto-Fallback อัตโนมัติ (`gemini-2.0-flash` -> `gemini-2.5-flash` -> `gemini-1.5-flash-latest` -> `gemini-1.5-flash-002`) ทั้งใน CrewAI trading cycle และ Vision OCR ทำให้ AI สามารถสลับโมเดลที่เปิดให้บริการใน API Key นั้นๆ ได้ทันทีโดยไม่พัง

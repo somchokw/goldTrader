@@ -32,21 +32,49 @@ def _post_request(url: str, **kwargs):
     return requests.post(url, **req_kwargs)
 
 def get_spot_gold_price() -> Optional[float]:
-    """Fetch real-time Spot Gold price from TradingView scanner API."""
+    """Fetch real-time Spot Gold (XAUUSD) price from live financial feeds."""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    
+    # Source 1: Swissquote Real-time Institutional Forex & Gold Feed
     try:
-        data = {
-            'symbols': {'tickers': ['TVC:GOLD', 'OANDA:XAUUSD', 'FOREXCOM:XAUUSD'], 'query': {'types': []}},
-            'columns': ['close']
-        }
-        r = _post_request('https://scanner.tradingview.com/global/scan', json=data, timeout=10)
+        r = _get_request('https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD', headers=headers, timeout=5)
         if r.status_code == 200:
-            json_data = r.json()
-            for item in json_data.get('data', []):
-                close_val = item.get('d', [None])[0]
-                if close_val is not None:
-                    return float(close_val)
+            data = r.json()
+            if isinstance(data, list) and len(data) > 0:
+                prices = data[0].get('spreadProfilePrices', [])
+                for p in prices:
+                    bid = p.get('bid')
+                    ask = p.get('ask')
+                    if bid and ask:
+                        price = round((float(bid) + float(ask)) / 2.0, 2)
+                        logger.info(f"Retrieved live Spot Gold price from Swissquote: {price}")
+                        return price
     except Exception as e:
-        logger.error(f"Failed to fetch Spot Gold price from TradingView scanner: {e}")
+        logger.warning(f"Failed to fetch Spot Gold price from Swissquote: {e}")
+
+    # Source 2: Yahoo Finance Gold Futures (GC=F) / XAUUSD
+    try:
+        r = _get_request('https://query2.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&range=1d', headers=headers, timeout=5)
+        if r.status_code == 200:
+            meta = r.json().get('chart', {}).get('result', [{}])[0].get('meta', {})
+            price = meta.get('regularMarketPrice')
+            if price:
+                price = round(float(price), 2)
+                logger.info(f"Retrieved live Gold price from Yahoo Finance: {price}")
+                return price
+    except Exception as e:
+        logger.warning(f"Failed to fetch Gold price from Yahoo Finance: {e}")
+
+    # Source 3: Binance PAXG Live Ticker
+    try:
+        r = _get_request('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', timeout=5)
+        if r.status_code == 200:
+            price = round(float(r.json().get('price')), 2)
+            logger.info(f"Retrieved live Gold price from Binance PAXG: {price}")
+            return price
+    except Exception as e:
+        logger.warning(f"Failed to fetch Gold price from Binance ticker: {e}")
+
     return None
 
 def fetch_technical_data(interval: str, period: str = None) -> Optional[MarketSnapshot]:

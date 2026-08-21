@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import tasks
 import asyncio
 import logging
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
 
 # Dictionary to store users we are waiting feedback from: {user_id: {"order": dict, "advice": str}}
 waiting_for_feedback = {}
@@ -93,9 +95,46 @@ async def before_scanner_loop():
     # Stagger scanner loop so it doesn't collide with routine loop on startup
     await asyncio.sleep(60)
 
+@tree.command(name="check", description="ตรวจสอบสถานะการทำงานของบอททองคำ")
+async def slash_check(interaction: discord.Interaction):
+    await interaction.response.send_message("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.6.9)")
+
+@tree.command(name="checkgold", description="ดูราคาทองคำ XAUUSD และสถิติเทคนิคล่าสุดแบบ Real-time (15m)")
+async def slash_checkgold(interaction: discord.Interaction):
+    await interaction.response.defer()
+    try:
+        from indicators import fetch_technical_data
+        snapshot = await asyncio.to_thread(fetch_technical_data, "15m")
+        if snapshot:
+            reply = f"📊 **Gold Market Status (XAUUSD - 15m)** 📊\n\n"
+            reply += f"**Current Price:** ${snapshot.close_price:.2f}\n"
+            reply += f"**Trend (SMA20):** {snapshot.trend_structure}\n"
+            reply += f"**RSI (14):** {snapshot.rsi_14:.2f}\n"
+            
+            stoch_k_str = f"{snapshot.stoch_k:.2f}" if snapshot.stoch_k else "N/A"
+            stoch_d_str = f"{snapshot.stoch_d:.2f}" if snapshot.stoch_d else "N/A"
+            reply += f"**Stochastic (8,3,3):** %K = {stoch_k_str}, %D = {stoch_d_str}\n"
+            
+            swing_h_str = f"${snapshot.swing_high:.2f}" if snapshot.swing_high else "N/A"
+            swing_l_str = f"${snapshot.swing_low:.2f}" if snapshot.swing_low else "N/A"
+            reply += f"**Resistance (Swing High):** {swing_h_str}\n"
+            reply += f"**Support (Swing Low):** {swing_l_str}\n"
+            
+            await interaction.followup.send(reply)
+        else:
+            await interaction.followup.send("❌ ไม่สามารถดึงข้อมูลทางเทคนิคได้ในขณะนี้ครับ")
+    except Exception as e:
+        logger.error(f"Error checking gold price via slash command: {e}", exc_info=True)
+        await interaction.followup.send(f"❌ เกิดข้อผิดพลาดในการดึงข้อมูล: {str(e)}")
+
 @client.event
 async def on_ready():
     logger.info(f'Logged in as {client.user}')
+    try:
+        synced = await tree.sync()
+        logger.info(f'Successfully synced {len(synced)} Slash Command(s): {[cmd.name for cmd in synced]}')
+    except Exception as e:
+        logger.warning(f'Failed to sync slash commands: {e}')
     if not routine_loop.is_running():
         routine_loop.start()
     if not scanner_loop.is_running():
@@ -108,22 +147,22 @@ async def on_message(message):
 
     logger.info(f"Received message from {message.author}: {message.content} (Attachments: {len(message.attachments)})")
 
-    # Clean message text by stripping bot mention if present
+    # Clean message text
     content = message.content.strip()
+    raw = content.lower()
+    
+    # Strip bot mentions
     if client.user:
         mention_patterns = [f"<@{client.user.id}>", f"<@!{client.user.id}>"]
         for pattern in mention_patterns:
-            content = content.replace(pattern, "").strip()
-    
-    cmd = content.lower()
+            raw = raw.replace(pattern.lower(), "").strip()
 
-    # Command: #check, !check, /check, $check, or 'check'
-    if cmd in ["#check", "!check", "/check", "$check", "check"]:
-        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.6.5)")
-        return
+    # Clean leading prefixes like #, !, /, $, @
+    cleaned = raw.lstrip("#!/$@ ").strip()
+    is_bot_mentioned = client.user in message.mentions if client.user else False
 
-    # Command: #checkgold, !checkgold, /checkgold, $checkgold, or 'checkgold'
-    if cmd in ["#checkgold", "!checkgold", "/checkgold", "$checkgold", "checkgold"]:
+    # Command: checkgold
+    if cleaned.startswith("checkgold") or "checkgold" in cleaned or (is_bot_mentioned and "gold" in cleaned):
         await message.reply("🔄 กำลังดึงข้อมูลราคาทองคำและสถิติทางเทคนิคล่าสุด โปรดรอสักครู่...")
         try:
             from indicators import fetch_technical_data
@@ -151,13 +190,18 @@ async def on_message(message):
             await message.reply(f"❌ เกิดข้อผิดพลาดในการดึงข้อมูล: {str(e)}")
         return
 
+    # Command: check
+    if cleaned.startswith("check") or cleaned == "ping" or (is_bot_mentioned and "check" in cleaned):
+        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.6.9)")
+        return
+
     # Reply if mentioned without specific command
-    if client.user in message.mentions and not message.attachments:
+    if is_bot_mentioned and not message.attachments:
         await message.reply(
-            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.6.5)\n"
+            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.6.9)\n"
             "คำสั่งที่ใช้งานได้:\n"
-            "• `#check` : ตรวจสอบสถานะการเชื่อมต่อของบอท\n"
-            "• `#checkgold` : ดึงข้อมูลราคาทองคำและ Indicator ทางเทคนิคล่าสุด (15m)\n"
+            "• `/check` หรือ `#check` : ตรวจสอบสถานะการเชื่อมต่อของบอท\n"
+            "• `/checkgold` หรือ `#checkgold` : ดึงข้อมูลราคาทองคำและ Indicator ทางเทคนิคล่าสุด (15m)\n"
             "• หรือแนบรูปภาพพอร์ต/กราฟ เพื่อให้ AI ช่วยวิเคราะห์ไม้เทรดได้ทันทีครับ"
         )
         return

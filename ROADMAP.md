@@ -6,6 +6,12 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🚀 Patch v1.6.9: Real-Time Spot Gold, Fresh News Feed & Slash Commands
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- เชื่อมต่อ Live Spot Gold Feed จาก Swissquote และ Yahoo Finance ทำให้ได้ราคาทองคำปัจจุบันสดใหม่อยู่เสมอ
+- ปรับปรุงการดึงข่าวสารให้กรองเฉพาะข่าวใน 24 ชั่วโมงล่าสุด (`when:1d`) และ FXStreet RSS
+- เพิ่ม Discord Slash Commands `/check` และ `/checkgold` ใช้งานได้ทันทีแบบ Native
+
 ### 🛠️ Patch v1.6.8: Gemini Model 404 Resolution & Multi-Model Dynamic Fallbacks
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - แก้ปัญหา `404 NOT_FOUND` ของ Google Gemini API v1beta ด้วยการตั้งค่า Default เป็น `gemini-2.0-flash`

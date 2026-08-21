@@ -86,29 +86,43 @@ def _fetch_rss_news(url: str, source_name: str) -> List[str]:
         return []
 
 def fetch_gold_news() -> str:
-    """Fetch latest gold news with multi-source fallback (Google News RSS & Investing.com RSS)."""
-    # Source 1: Google News RSS for Gold / XAUUSD
+    """Fetch real-time gold news for today with multi-source fallback (Google News RSS 1d & FXStreet RSS)."""
+    # Source 1: Google News RSS for Gold / XAUUSD from the last 24 hours
     try:
         news_items = _fetch_rss_news(
-            'https://news.google.com/rss/search?q=gold+price+XAUUSD&hl=en-US&gl=US&ceid=US:en',
-            'Google News'
+            'https://news.google.com/rss/search?q=gold+price+OR+XAUUSD+when:1d&hl=en-US&gl=US&ceid=US:en',
+            'Google News (Today)'
         )
         if news_items:
             news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(news_items)])
-            return f"ข่าวล่าสุดเกี่ยวกับทองคำ (Google News):\n{news_summary}"
+            return f"ข่าวราคาทองคำล่าสุดประจำวันนี้ (Google News):\n{news_summary}"
     except Exception as e:
         logger.warning(f"Error fetching gold news from Google News RSS: {e}")
 
-    # Source 2: Investing.com RSS
+    # Source 2: FXStreet Gold News RSS
     try:
         news_items = _fetch_rss_news(
-            'https://www.investing.com/rss/news_11.rss',
-            'Investing.com'
+            'https://www.fxstreet.com/rss/news',
+            'FXStreet'
+        )
+        # Filter for gold/XAU/dollar mentions
+        gold_items = [item for item in news_items if any(k in item.lower() for k in ['gold', 'xau', 'dollar', 'fed', 'treasury'])]
+        if gold_items:
+            news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(gold_items[:5])])
+            return f"ข่าวการเงินและทองคำล่าสุด (FXStreet):\n{news_summary}"
+    except Exception as e:
+        logger.warning(f"Error fetching gold news from FXStreet RSS: {e}")
+
+    # Source 3: Google News 2-Day Fallback
+    try:
+        news_items = _fetch_rss_news(
+            'https://news.google.com/rss/search?q=gold+price+OR+XAUUSD+when:2d&hl=en-US&gl=US&ceid=US:en',
+            'Google News (48h)'
         )
         if news_items:
             news_summary = "\n".join([f"{idx+1}. {txt}" for idx, txt in enumerate(news_items)])
-            return f"ข่าวล่าสุดเกี่ยวกับทองคำ (Investing.com):\n{news_summary}"
+            return f"ข่าวราคาทองคำล่าสุด (Google News):\n{news_summary}"
     except Exception as e:
-        logger.warning(f"Error fetching gold news from Investing.com RSS: {e}")
+        logger.warning(f"Error fetching 2-day gold news: {e}")
 
     return "ไม่สามารถโหลดข่าวสารล่าสุดได้ในขณะนี้"
