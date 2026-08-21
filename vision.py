@@ -23,36 +23,52 @@ def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
     """
     Extracts trading order details (Entry, Current Price, TP, SL, Status) from a screenshot.
     """
-    try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        img = Image.open(BytesIO(image_bytes))
-        
-        prompt = (
-            "Analyze this trading terminal screenshot (like MT4/MT5/TradingView). "
-            "Extract the following values for the order:\n"
-            "- Entry Price\n"
-            "- Current Market Price\n"
-            "- Take Profit (TP) price (if not set, return 0.0)\n"
-            "- Stop Loss (SL) price (if not set, return 0.0)\n"
-            "- The action (BUY or SELL)\n"
-            "- The status of the order (ACTIVE if it's currently running, PENDING if it's a Buy/Sell Limit or Stop order)\n\n"
-            "Return the data strictly in the requested JSON schema."
-        )
-        
-        vision_model = os.environ.get("VISION_MODEL", "gemini-1.5-flash")
-        response = client.models.generate_content(
-            model=vision_model,
-            contents=[img, prompt],
-            config={
-                'response_mime_type': 'application/json',
-                'response_schema': OrderDetails,
-                'temperature': 0.1,
-            },
-        )
-        
-        data = json.loads(response.text)
-        return OrderDetails(**data)
-        
-    except Exception as e:
-        logger.error(f"Error extracting data from image: {str(e)}")
-        raise e
+    candidate_models = [
+        os.environ.get("VISION_MODEL", "gemini-2.0-flash"),
+        "gemini-2.5-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash-002",
+        "gemini-1.5-flash-001",
+        "gemini-flash-latest"
+    ]
+    models_to_try = []
+    for m in candidate_models:
+        if m and m not in models_to_try:
+            models_to_try.append(m)
+
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    img = Image.open(BytesIO(image_bytes))
+    
+    prompt = (
+        "Analyze this trading terminal screenshot (like MT4/MT5/TradingView). "
+        "Extract the following values for the order:\n"
+        "- Entry Price\n"
+        "- Current Market Price\n"
+        "- Take Profit (TP) price (if not set, return 0.0)\n"
+        "- Stop Loss (SL) price (if not set, return 0.0)\n"
+        "- The action (BUY or SELL)\n"
+        "- The status of the order (ACTIVE if it's currently running, PENDING if it's a Buy/Sell Limit or Stop order)\n\n"
+        "Return the data strictly in the requested JSON schema."
+    )
+    
+    last_err = None
+    for model_name in models_to_try:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=[img, prompt],
+                config={
+                    'response_mime_type': 'application/json',
+                    'response_schema': OrderDetails,
+                    'temperature': 0.1,
+                },
+            )
+            data = json.loads(response.text)
+            return OrderDetails(**data)
+        except Exception as e:
+            last_err = e
+            logger.warning(f"Vision model {model_name} failed: {e}. Trying fallback model...")
+            continue
+            
+    logger.error(f"Error extracting data from image (all models failed): {last_err}")
+    raise last_err

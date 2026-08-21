@@ -6,6 +6,11 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛠️ Patch v1.6.8: Gemini Model 404 Resolution & Multi-Model Dynamic Fallbacks
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- แก้ปัญหา `404 NOT_FOUND` ของ Google Gemini API v1beta ด้วยการตั้งค่า Default เป็น `gemini-2.0-flash`
+- เพิ่มระบบ Dynamic Multi-Model Fallback ใน `agents.py`, `scheduler.py`, และ `vision.py` เพื่อลองสลับไปใช้ `gemini-2.5-flash`, `gemini-1.5-flash-latest` อัตโนมัติหากโมเดลหลักไม่พร้อมใช้งาน
+
 ### 🛠️ Patch v1.6.7: Gemini Model Identifier & Safe Pytest Discovery
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - ปรับแก้ชื่อโมเดล LLM และ Vision ให้ถูกต้องเป็น `gemini-1.5-flash` พร้อมเปิดรับค่า override จาก environment variables ป้องกัน ModelNotFound Error ตอน AI ออกแผนและอ่านรูปภาพ

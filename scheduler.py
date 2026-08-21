@@ -6,24 +6,52 @@ from agents import create_gold_crew
 from validators import validate_trade_plan
 from risk import generate_risk_matrix
 from notifications import send_discord_notify
-from config import GEMINI_API_KEY, SYMBOL
+from config import GEMINI_API_KEY, SYMBOL, LLM_MODEL
 
 logger = logging.getLogger(__name__)
 
 def run_trading_cycle(is_routine: bool = False):
     cycle_type = "Routine Update" if is_routine else "Sniper Scanner"
     logger.info(f"Starting Trading Cycle ({cycle_type}) for {SYMBOL}...")
+    
+    candidate_models = [
+        LLM_MODEL,
+        "gemini/gemini-2.0-flash",
+        "gemini/gemini-2.5-flash",
+        "gemini/gemini-1.5-flash-latest",
+        "gemini/gemini-1.5-flash-002",
+        "gemini/gemini-1.5-flash-001",
+        "gemini/gemini-flash-latest"
+    ]
+    models_to_try = []
+    for m in candidate_models:
+        if m and m not in models_to_try:
+            models_to_try.append(m)
+
+    trade_plan = None
+    last_error = None
+
+    for model_name in models_to_try:
+        try:
+            logger.info(f"Running trading cycle with model: {model_name}")
+            crew = create_gold_crew(model_name=model_name)
+            result = crew.kickoff()
+            
+            # CrewAI 0.28+ returns a CrewOutput object. The pydantic output is in result.pydantic
+            trade_plan = getattr(result, 'pydantic', None)
+            if trade_plan:
+                logger.info(f"Successfully generated TradePlan using {model_name}")
+                break
+        except Exception as e:
+            last_error = e
+            logger.warning(f"Error with model {model_name}: {e}. Trying fallback model...")
+            continue
+            
     try:
-        crew = create_gold_crew()
-        result = crew.kickoff()
-        
-        # CrewAI 0.28+ returns a CrewOutput object. The pydantic output is in result.pydantic
-        trade_plan = getattr(result, 'pydantic', None)
-        
         if not trade_plan:
-             logger.error("Failed to parse TradePlan from Agent output.")
-             send_discord_notify("❌ System Error: Agent failed to return a valid TradePlan.")
-             return
+             logger.error(f"Failed to parse TradePlan from Agent output (all candidate models tried). Last error: {last_error}")
+             send_discord_notify(f"❌ Exception in trading cycle: {last_error or 'Agent failed to return a valid TradePlan.'}")
+             return None
              
         # Validate logic
         is_valid = validate_trade_plan(trade_plan)

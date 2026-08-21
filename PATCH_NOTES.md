@@ -1,5 +1,9 @@
 # 📝 Patch Notes
 
+## v1.6.8 - 2026-08-21
+### 🛠️ Fixed
+- **Gemini Model 404 Resolution & Multi-Model Dynamic Fallbacks:** แก้ปัญหา `404 NOT_FOUND` จาก Google Gemini v1beta โดยเปลี่ยนโมเดลหลักเป็น `gemini-2.0-flash` และเพิ่มระบบ Auto-Fallback อัตโนมัติ (`gemini-2.0-flash` -> `gemini-2.5-flash` -> `gemini-1.5-flash-latest` -> `gemini-1.5-flash-002`) ทั้งใน CrewAI trading cycle และ Vision OCR ทำให้ AI สามารถสลับโมเดลที่เปิดให้บริการใน API Key นั้นๆ ได้ทันทีโดยไม่พัง
+
 ## v1.6.7 - 2026-08-21
 ### 🛠️ Fixed
 - **Gemini Model Identifier & Env Override:** เปลี่ยนชื่อโมเดลจาก `gemini-3.5-flash` ที่ไม่มีอยู่จริง กลับมาใช้โมเดลมาตรฐานที่เสถียร `gemini-1.5-flash` พร้อมเปิดรับค่าผ่าน `LLM_MODEL` และ `VISION_MODEL` environment variable ป้องกัน AI Crew และ Vision API ล่มตอนรันวิเคราะห์

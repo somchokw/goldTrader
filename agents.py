@@ -9,12 +9,16 @@ from models import TradePlan
 
 logger = logging.getLogger(__name__)
 
-# Initialize LLM using CrewAI's wrapper
-llm = LLM(
-    model=LLM_MODEL,
-    api_key=GEMINI_API_KEY,
-    temperature=0.2
-)
+# Initialize LLM helper using CrewAI's wrapper
+def get_llm(model_name: str = None):
+    chosen_model = model_name or LLM_MODEL
+    return LLM(
+        model=chosen_model,
+        api_key=GEMINI_API_KEY,
+        temperature=0.2
+    )
+
+llm = get_llm()
 
 @tool("Fetch Latest Gold News")
 def tool_get_latest_gold_news() -> str:
@@ -34,14 +38,15 @@ def tool_get_technical_data() -> str:
         
     return f"Daily Data:\n{daily.model_dump_json(indent=2)}\n\n15m Data:\n{intraday.model_dump_json(indent=2)}"
 
-def create_gold_crew():
+def create_gold_crew(model_name: str = None):
+    current_llm = get_llm(model_name)
     macro_analyst = Agent(
         role="Gold Macro & Sentiment Analyst",
         goal="วิเคราะห์ภาพรวมเศรษฐกิจโลก ดอกเบี้ย FED ค่าเงิน DXY และสงครามที่มีผลต่อราคาทองคำ",
         backstory="คุณคือผู้เชี่ยวชาญด้านเศรษฐศาสตร์ มุ่งเน้นการวิเคราะห์สินทรัพย์ปลอดภัยอย่างทองคำ ห้ามอ้างอิงความรู้เก่า ให้วิเคราะห์จากข้อมูลที่ Tool ดึงมาเท่านั้น",
         tools=[tool_get_latest_gold_news],
         verbose=True,
-        llm=llm
+        llm=current_llm
     )
 
     technical_analyst = Agent(
@@ -50,7 +55,7 @@ def create_gold_crew():
         backstory="คุณคือ Trader สาย Quant ที่วิเคราะห์โครงสร้างราคา (Market Structure) จาก Swing High/Low ในอดีตได้อย่างแม่นยำ วิเคราะห์จาก Data Snapshot ที่ได้มาเท่านั้น",
         tools=[tool_get_technical_data],
         verbose=True,
-        llm=llm
+        llm=current_llm
     )
 
     chief_trader = Agent(
@@ -59,7 +64,7 @@ def create_gold_crew():
         backstory="คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ คุณมีกฎการเทรดที่เข้มงวดและจะไม่เปิดออเดอร์มั่วซั่ว คุณเป็นผู้ตัดสินใจขั้นเด็ดขาดว่าควรเทรดหรือไม่",
         verbose=True,
         allow_delegation=False,
-        llm=llm
+        llm=current_llm
     )
 
     trade_manager = Agent(
@@ -69,7 +74,7 @@ def create_gold_crew():
         verbose=True,
         allow_delegation=False,
         tools=[tool_get_latest_gold_news, tool_get_technical_data],
-        llm=llm
+        llm=current_llm
     )
 
     # 2. Define Tasks
@@ -115,9 +120,10 @@ def create_gold_crew():
     
     return crew
 
-def create_trade_management_crew(order_details: dict):
+def create_trade_management_crew(order_details: dict, model_name: str = None):
     from models import TradeManagementPlan
     
+    current_llm = get_llm(model_name)
     trade_manager = Agent(
         role="Trade Management Specialist",
         goal="ประเมินออเดอร์ที่ถืออยู่หรือตั้งล่วงหน้า จากสถานการณ์ตลาดปัจจุบัน และตัดสินใจอย่างเด็ดขาดว่าจะ HOLD, CLOSE, RAISE_SL, ADD_POSITION, WAIT_PENDING หรือ CANCEL_PENDING",
@@ -125,7 +131,7 @@ def create_trade_management_crew(order_details: dict):
         verbose=True,
         allow_delegation=False,
         tools=[tool_get_latest_gold_news, tool_get_technical_data],
-        llm=llm
+        llm=current_llm
     )
     
     manage_task = Task(
@@ -152,9 +158,10 @@ def create_trade_management_crew(order_details: dict):
     
     return crew
 
-def create_recovery_crew(order_details: dict):
+def create_recovery_crew(order_details: dict, model_name: str = None):
     from models import RecoveryPlan
     
+    current_llm = get_llm(model_name)
     recovery_specialist = Agent(
         role="Recovery & Psychology Specialist",
         goal="วิเคราะห์สาเหตุที่ออเดอร์เดิมชน Stop Loss หรือล้างพอร์ต และตัดสินใจว่าจะแนะนำให้พัก (REST) หรือหาจุดเข้าใหม่เพื่อแก้เกม (RECOVERY)",
@@ -162,7 +169,7 @@ def create_recovery_crew(order_details: dict):
         verbose=True,
         allow_delegation=False,
         tools=[tool_get_latest_gold_news, tool_get_technical_data],
-        llm=llm
+        llm=current_llm
     )
     
     recovery_task = Task(

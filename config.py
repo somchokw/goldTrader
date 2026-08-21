@@ -13,7 +13,7 @@ DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 
 # Model Configuration
 # Use stable version instead of 'latest' for reproducibility
-LLM_MODEL = os.environ.get("LLM_MODEL", "gemini/gemini-1.5-flash")
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini/gemini-2.0-flash")
 
 # Trading Configurations
 # Using TradingView for accurate Spot Gold pricing
