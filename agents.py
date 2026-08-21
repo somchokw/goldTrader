@@ -2,7 +2,8 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.tools import tool
 import json
 import logging
-from config import GEMINI_API_KEY, LLM_MODEL
+import os
+from config import GEMINI_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY, ANTHROPIC_API_KEY, LLM_MODEL
 from market_data import fetch_gold_news, fetch_macro_data
 from indicators import fetch_technical_data
 from models import TradePlan
@@ -12,9 +13,19 @@ logger = logging.getLogger(__name__)
 # Initialize LLM helper using CrewAI's wrapper
 def get_llm(model_name: str = None):
     chosen_model = model_name or LLM_MODEL
+    
+    if chosen_model.startswith("openai/") or chosen_model.startswith("gpt-"):
+        api_key = OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY")
+    elif chosen_model.startswith("anthropic/") or chosen_model.startswith("claude-"):
+        api_key = ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY")
+    elif chosen_model.startswith("deepseek/"):
+        api_key = DEEPSEEK_API_KEY or os.environ.get("DEEPSEEK_API_KEY")
+    else:
+        api_key = GEMINI_API_KEY
+        
     return LLM(
         model=chosen_model,
-        api_key=GEMINI_API_KEY,
+        api_key=api_key,
         temperature=0.2
     )
 

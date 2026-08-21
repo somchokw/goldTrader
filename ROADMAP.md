@@ -6,6 +6,12 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🚀 Patch v1.7.1: Gemini 2.5 Upgrade, Multi-Provider & 503 Spike Resilience
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- อัปเกรดโมเดลเริ่มต้นเป็น `gemini-2.5-flash` / `gemini-2.5-pro` ที่ฉลาดและแม่นยำกว่า 1.5
+- รองรับโมเดลจาก OpenAI, Anthropic, DeepSeek ผ่าน Environment Variables
+- จัดการปัญหา 503 High Demand Spikes ด้วยระบบหน่วงเวลาและสลับโมเดลอัตโนมัติ
+
 ### 🎯 Patch v1.7.0: Strict Real-Time Price Enforcement (Anti-Hallucination)
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - กำชับคำสั่งและ Backstory ของ Chief Gold Trader ให้ใช้ราคา Spot Gold จาก Data Tool สดๆ (4,500+ USD) ห้ามอิงราคาเก่าในความจำโมเดล (2,000–2,400 USD)

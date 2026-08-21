@@ -24,11 +24,11 @@ def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
     Extracts trading order details (Entry, Current Price, TP, SL, Status) from a screenshot.
     """
     candidate_models = [
-        os.environ.get("VISION_MODEL", "gemini-2.0-flash"),
-        "gemini-2.5-flash",
+        os.environ.get("VISION_MODEL", "gemini-2.5-flash"),
+        "gemini-2.5-pro",
+        "gemini-2.0-flash",
         "gemini-1.5-flash-latest",
-        "gemini-1.5-flash-002",
-        "gemini-1.5-flash-001",
+        "gemini-1.5-pro-latest",
         "gemini-flash-latest"
     ]
     models_to_try = []

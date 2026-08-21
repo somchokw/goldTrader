@@ -8,12 +8,15 @@ HIGH_RISK_MODE_ENABLED = os.environ.get("HIGH_RISK_MODE_ENABLED", "False").lower
 
 # API Keys
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 
 # Model Configuration
-# Use stable version instead of 'latest' for reproducibility
-LLM_MODEL = os.environ.get("LLM_MODEL", "gemini/gemini-2.0-flash")
+# Upgraded to next-gen Gemini 2.5 Flash / 2.5 Pro by default
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini/gemini-2.5-flash")
 
 # Trading Configurations
 # Using TradingView for accurate Spot Gold pricing

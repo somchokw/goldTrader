@@ -1,5 +1,11 @@
 # 📝 Patch Notes
 
+## v1.7.1 - 2026-08-21
+### 🚀 Upgraded Models & 503 High Demand Resilience
+- **Upgrade to Gemini 2.5 Flash / 2.5 Pro:** อัปเกรดโมเดลหลักเป็นโมเดลรุ่นใหม่ล่าสุด `gemini-2.5-flash` และ `gemini-2.5-pro` ซึ่งมีความแม่นยำและการคำนวณเชิง Quant สูงกว่าโมเดล 1.5 อย่างก้าวกระโดด
+- **Multi-Provider Support:** รองรับการเชื่อมต่อ OpenAI (`gpt-4o`, `gpt-4o-mini`), Anthropic (`claude-3-5-sonnet`), DeepSeek (`deepseek-chat`) เพียงเพิ่ม API Key ใน Environment Variables
+- **503 High Demand Auto-Recovery:** เพิ่มระบบจัดการ Error `503 UNAVAILABLE (High demand)` พร้อม Exponential Backoff และสลับไปยังโมเดลสำรองใน Candidate Pool โดยอัตโนมัติ ทำให้บอททำงานต่อเนื่องได้ไม่สะดุด
+
 ## v1.7.0 - 2026-08-21
 ### 🎯 Price Accuracy & Anti-Hallucination
 - **Strict Real-Time Price Enforcement (4,500+ USD):** ล็อกกฎเหล็กใน Agent Backstory และ Trader Task ให้ใช้ตัวเลข `close_price` ปัจจุบันจากกราฟ 15m (ระดับ 4,500+ USD) เท่านั้น ห้าม AI หลอนหรือนำตัวเลขเก่าในหน่วยความจำ (2,000–2,400 USD) มาใช้ออกแผนเทรดเด็ดขาด

@@ -16,11 +16,11 @@ def run_trading_cycle(is_routine: bool = False):
     
     candidate_models = [
         LLM_MODEL,
-        "gemini/gemini-2.0-flash",
         "gemini/gemini-2.5-flash",
+        "gemini/gemini-2.5-pro",
+        "gemini/gemini-2.0-flash",
         "gemini/gemini-1.5-flash-latest",
-        "gemini/gemini-1.5-flash-002",
-        "gemini/gemini-1.5-flash-001",
+        "gemini/gemini-1.5-pro-latest",
         "gemini/gemini-flash-latest"
     ]
     models_to_try = []
@@ -44,7 +44,12 @@ def run_trading_cycle(is_routine: bool = False):
                 break
         except Exception as e:
             last_error = e
-            logger.warning(f"Error with model {model_name}: {e}. Trying fallback model...")
+            err_str = str(e)
+            if "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str.lower():
+                logger.warning(f"Model {model_name} is experiencing temporary 503 high demand spike. Waiting 2s before fallback...")
+                time.sleep(2)
+            else:
+                logger.warning(f"Error with model {model_name}: {e}. Trying fallback model...")
             continue
             
     try:
