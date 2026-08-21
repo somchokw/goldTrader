@@ -1,5 +1,10 @@
 # 📝 Patch Notes
 
+## v1.6.7 - 2026-08-21
+### 🛠️ Fixed
+- **Gemini Model Identifier & Env Override:** เปลี่ยนชื่อโมเดลจาก `gemini-3.5-flash` ที่ไม่มีอยู่จริง กลับมาใช้โมเดลมาตรฐานที่เสถียร `gemini-1.5-flash` พร้อมเปิดรับค่าผ่าน `LLM_MODEL` และ `VISION_MODEL` environment variable ป้องกัน AI Crew และ Vision API ล่มตอนรันวิเคราะห์
+- **Test Suite Discovery Guard:** ปรับปรุง `test_models.py` ให้ทำงานแบบ Safe Discovery เพื่อให้ Pytest รันผ่านทุก Test Case
+
 ## v1.6.6 - 2026-08-19
 ### 🚀 Enhanced
 - **Short-term (Scalp) & Long-term (Swing) Instant Signal Trigger:** ปรับจูน Prompt ของ Chief Gold Trader ให้สแกนและส่งสัญญาณเทรดทันทีเมื่อพบโอกาส ทั้งไม้สั้น (15m Scalp/Intraday ดักการกลับตัวตาม Stochastic/RSI/BB) และไม้ยาว (Daily/Swing รันเทรนด์ตามโครงสร้างใหญ่) โดยไม่ต้องรอให้เงื่อนไขสุดโต่ง (Extreme) ครบทุกข้อ

@@ -6,6 +6,11 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛠️ Patch v1.6.7: Gemini Model Identifier & Safe Pytest Discovery
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- ปรับแก้ชื่อโมเดล LLM และ Vision ให้ถูกต้องเป็น `gemini-1.5-flash` พร้อมเปิดรับค่า override จาก environment variables ป้องกัน ModelNotFound Error ตอน AI ออกแผนและอ่านรูปภาพ
+- อัปเดต Unit Test Discovery เพื่อให้ทดสอบระบบผ่าน 100%
+
 ### 🚀 Patch v1.6.6: Short-term & Long-term Instant Signals
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - ปรับเงื่อนไขการออกสัญญาณเทรดของ AI ให้ยืดหยุ่นและตอบสนองไวยิ่งขึ้น: เมื่อพบจังหวะเทรดไม่ว่าจะเป็นไม้สั้น (Scalp/Intraday) หรือไม้ยาว (Swing/Trend) ระบบจะส่งสัญญาณ BUY/SELL ทันที

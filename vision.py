@@ -39,8 +39,9 @@ def extract_order_from_image(image_bytes: bytes) -> OrderDetails:
             "Return the data strictly in the requested JSON schema."
         )
         
+        vision_model = os.environ.get("VISION_MODEL", "gemini-1.5-flash")
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model=vision_model,
             contents=[img, prompt],
             config={
                 'response_mime_type': 'application/json',
