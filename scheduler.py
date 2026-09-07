@@ -16,12 +16,10 @@ def run_trading_cycle(is_routine: bool = False):
     
     candidate_models = [
         LLM_MODEL,
-        "gemini/gemini-2.5-flash",
-        "gemini/gemini-2.5-pro",
-        "gemini/gemini-2.0-flash",
-        "gemini/gemini-1.5-flash-latest",
-        "gemini/gemini-1.5-pro-latest",
-        "gemini/gemini-flash-latest"
+        "gemini/gemini-3.6-flash",
+        "gemini/gemini-3.5-flash",
+        "gemini/gemini-flash-latest",
+        "gemini/gemini-3.1-pro-preview"
     ]
     models_to_try = []
     for m in candidate_models:
@@ -85,7 +83,7 @@ def run_trading_cycle(is_routine: bool = False):
 
         # It's a BUY/SELL signal
         final_message = f"🚨 **Trade Signal Detected!** 🚨\n\n" if not is_routine else f"📊 **Routine Market Update (มีสัญญาณเข้าเทรด!)**\n\n"
-        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.6.6)\n"
+        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.7.2)\n"
         final_message += f"**Action:** {trade_plan.action}\n"
         if getattr(trade_plan, 'trade_style', None):
             final_message += f"**รูปแบบแผน:** {trade_plan.trade_style}\n"

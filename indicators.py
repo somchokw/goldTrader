@@ -35,7 +35,24 @@ def get_spot_gold_price() -> Optional[float]:
     """Fetch real-time Spot Gold (XAUUSD) price from live financial feeds."""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     
-    # Source 1: Swissquote Real-time Institutional Forex & Gold Feed
+    # Source 1: TradingView Scanner API (Direct Institutional Spot Gold - OANDA & TVC)
+    try:
+        tv_payload = {
+            'symbols': {'tickers': ['OANDA:XAUUSD', 'TVC:GOLD', 'FX:XAUUSD'], 'query': {'types': []}},
+            'columns': ['close']
+        }
+        r = _post_request('https://scanner.tradingview.com/global/scan', json=tv_payload, timeout=5)
+        if r.status_code == 200:
+            for item in r.json().get('data', []):
+                val = item.get('d', [None])[0]
+                if val is not None and float(val) > 0:
+                    price = round(float(val), 2)
+                    logger.info(f"Retrieved live Spot Gold price from TradingView ({item.get('s')}): {price}")
+                    return price
+    except Exception as e:
+        logger.warning(f"Failed to fetch Spot Gold price from TradingView Scanner: {e}")
+
+    # Source 2: Swissquote Real-time Institutional Forex & Gold Feed
     try:
         r = _get_request('https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD', headers=headers, timeout=5)
         if r.status_code == 200:
@@ -52,7 +69,7 @@ def get_spot_gold_price() -> Optional[float]:
     except Exception as e:
         logger.warning(f"Failed to fetch Spot Gold price from Swissquote: {e}")
 
-    # Source 2: Yahoo Finance Gold Futures (GC=F) / XAUUSD
+    # Source 3: Yahoo Finance Gold Futures (GC=F) / XAUUSD
     try:
         r = _get_request('https://query2.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&range=1d', headers=headers, timeout=5)
         if r.status_code == 200:
@@ -65,7 +82,20 @@ def get_spot_gold_price() -> Optional[float]:
     except Exception as e:
         logger.warning(f"Failed to fetch Gold price from Yahoo Finance: {e}")
 
-    # Source 3: Binance PAXG Live Ticker
+    # Source 4: Kraken PAXGUSD Ticker
+    try:
+        r = _get_request('https://api.kraken.com/0/public/Ticker?pair=PAXGUSD', timeout=5)
+        if r.status_code == 200:
+            res = r.json().get('result', {}).get('PAXGUSD', {})
+            price_arr = res.get('c', [])
+            if price_arr and len(price_arr) > 0:
+                price = round(float(price_arr[0]), 2)
+                logger.info(f"Retrieved live Gold price from Kraken PAXG: {price}")
+                return price
+    except Exception as e:
+        logger.warning(f"Failed to fetch Gold price from Kraken ticker: {e}")
+
+    # Source 5: Binance PAXG Live Ticker
     try:
         r = _get_request('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', timeout=5)
         if r.status_code == 200:
@@ -78,54 +108,65 @@ def get_spot_gold_price() -> Optional[float]:
     return None
 
 def fetch_technical_data(interval: str, period: str = None) -> Optional[MarketSnapshot]:
-    """Fetch technical data using Binance (PAXG) and adjust to Spot Gold price."""
+    """Fetch technical data using multi-source feeds (Kraken / Binance PAXG) adjusted to live Spot Gold price."""
     try:
         # 1. Fetch real Spot Gold price
         spot_price = get_spot_gold_price()
         
-        # 2. Fetch Gold proxy (PAXGUSDT) history for indicators with multiple endpoint fallbacks
-        binance_interval = "15m" if interval == "15m" else "1d"
-        binance_endpoints = [
-            f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500",
-            f"https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500",
-            f"https://api.binance.us/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500"
-        ]
+        # 2. Fetch Gold proxy history for indicators with Kraken (primary, resilient to US cloud bans) and Binance
+        hist = None
         
-        data = None
-        for ep in binance_endpoints:
-            try:
-                r = _get_request(ep, timeout=10)
-                if r.status_code == 200:
-                    json_res = r.json()
-                    if isinstance(json_res, list) and len(json_res) >= 26:
-                        data = json_res
-                        break
-                else:
-                    logger.warning(f"Binance endpoint {ep} returned status {r.status_code}")
-            except Exception as ep_err:
-                logger.warning(f"Error fetching from Binance endpoint {ep}: {ep_err}")
-
-        if not data or len(data) < 26:
-            logger.error(f"Insufficient historical data from Binance for {interval}")
-            return None
+        # Source A: Kraken Public OHLC API
+        try:
+            kraken_interval = 15 if interval == "15m" else 1440
+            r_kr = _get_request(f"https://api.kraken.com/0/public/OHLC?pair=PAXGUSD&interval={kraken_interval}", timeout=8)
+            if r_kr.status_code == 200:
+                k_data = r_kr.json().get("result", {}).get("PAXGUSD", [])
+                if isinstance(k_data, list) and len(k_data) >= 26:
+                    df_kr = pd.DataFrame(k_data, columns=["time", "Open", "High", "Low", "Close", "vwap", "Volume", "count"])
+                    hist = df_kr[["Open", "High", "Low", "Close", "Volume"]].astype(float)
+                    logger.info(f"Retrieved {len(hist)} historical candles from Kraken OHLC ({interval})")
+        except Exception as e_kr:
+            logger.warning(f"Kraken OHLC fetch error: {e_kr}")
             
-        # Convert Binance data to DataFrame
-        df = pd.DataFrame(data, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume', 'close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'])
-        hist = df[['Open', 'High', 'Low', 'Close', 'Volume']].astype(float)
+        # Source B: Binance Fallback
+        if hist is None or len(hist) < 26:
+            binance_interval = "15m" if interval == "15m" else "1d"
+            binance_endpoints = [
+                f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500",
+                f"https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500",
+                f"https://api.binance.us/api/v3/klines?symbol=PAXGUSDT&interval={binance_interval}&limit=500"
+            ]
+            for ep in binance_endpoints:
+                try:
+                    r = _get_request(ep, timeout=8)
+                    if r.status_code == 200:
+                        json_res = r.json()
+                        if isinstance(json_res, list) and len(json_res) >= 26:
+                            df_bn = pd.DataFrame(json_res, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume', 'close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'])
+                            hist = df_bn[['Open', 'High', 'Low', 'Close', 'Volume']].astype(float)
+                            logger.info(f"Retrieved {len(hist)} historical candles from Binance ({ep})")
+                            break
+                except Exception as ep_err:
+                    logger.warning(f"Error fetching from Binance endpoint {ep}: {ep_err}")
+
+        if hist is None or len(hist) < 26:
+            logger.error(f"Insufficient historical data from all sources for {interval}")
+            return None
             
         proxy_close = float(hist['Close'].iloc[-1])
         proxy_high = float(hist['High'].iloc[-1])
         proxy_low = float(hist['Low'].iloc[-1])
         volume = float(hist['Volume'].iloc[-1])
         
-        # Fallback to proxy price if TradingView scanner failed
+        # Fallback to proxy price if spot price feed failed
         if not spot_price:
-            logger.warning("Could not retrieve Spot Gold price from TV. Falling back to PAXGUSDT price.")
+            logger.warning("Could not retrieve Spot Gold price from feeds. Falling back to proxy price.")
             spot_price = proxy_close
         
         # 3. Calculate Spread
         spread = proxy_close - spot_price
-        logger.info(f"PAXG Proxy: {proxy_close}, Spot Gold: {spot_price}, Spread: {spread}")
+        logger.info(f"Proxy Price: {proxy_close}, Spot Gold: {spot_price}, Spread: {spread:.2f}")
         
         # Adjust current candle prices
         close_price = spot_price

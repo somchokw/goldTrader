@@ -6,6 +6,13 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🚀 Patch v1.7.2: Gemini 3.6 Upgrade, Real-Time TradingView Feeds & Cronjob Endpoints
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- อัปเกรดเป็น Gemini 3.6 Flash / 3.5 Flash แก้ปัญหา 404 NOT FOUND จากการยกเลิกโมเดลรุ่นเก่า
+- เชื่อมต่อ TradingView Scanner API สำหรับราคา Spot Gold สถาบัน (`OANDA:XAUUSD`, `TVC:GOLD`, `FX:XAUUSD`)
+- เพิ่ม Kraken Public OHLC สำหรับแท่งเทียน 15m/1d ป้องกันปัญหา Cloud Geoblock จาก Binance บน Render สหรัฐฯ
+- เพิ่ม Endpoints `/cron`, `/trigger`, `/scan`, `/check`, `/checkgold` ใน `keep_alive.py` รองรับการปลุกและสั่งสแกนจาก cron-job.org
+
 ### 🚀 Patch v1.7.1: Gemini 2.5 Upgrade, Multi-Provider & 503 Spike Resilience
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - อัปเกรดโมเดลเริ่มต้นเป็น `gemini-2.5-flash` / `gemini-2.5-pro` ที่ฉลาดและแม่นยำกว่า 1.5

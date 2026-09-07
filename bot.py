@@ -97,7 +97,7 @@ async def before_scanner_loop():
 
 @tree.command(name="check", description="ตรวจสอบสถานะการทำงานของบอททองคำ")
 async def slash_check(interaction: discord.Interaction):
-    await interaction.response.send_message("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.6.9)")
+    await interaction.response.send_message("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.2)")
 
 @tree.command(name="checkgold", description="ดูราคาทองคำ XAUUSD และสถิติเทคนิคล่าสุดแบบ Real-time (15m)")
 async def slash_checkgold(interaction: discord.Interaction):
@@ -192,13 +192,13 @@ async def on_message(message):
 
     # Command: check
     if cleaned.startswith("check") or cleaned == "ping" or (is_bot_mentioned and "check" in cleaned):
-        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.6.9)")
+        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.2)")
         return
 
     # Reply if mentioned without specific command
     if is_bot_mentioned and not message.attachments:
         await message.reply(
-            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.6.9)\n"
+            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.7.2)\n"
             "คำสั่งที่ใช้งานได้:\n"
             "• `/check` หรือ `#check` : ตรวจสอบสถานะการเชื่อมต่อของบอท\n"
             "• `/checkgold` หรือ `#checkgold` : ดึงข้อมูลราคาทองคำและ Indicator ทางเทคนิคล่าสุด (15m)\n"

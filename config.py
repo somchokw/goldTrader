@@ -15,8 +15,8 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 
 # Model Configuration
-# Upgraded to next-gen Gemini 2.5 Flash / 2.5 Pro by default
-LLM_MODEL = os.environ.get("LLM_MODEL", "gemini/gemini-2.5-flash")
+# Upgraded to next-gen Gemini 3.6 Flash by default
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini/gemini-3.6-flash")
 
 # Trading Configurations
 # Using TradingView for accurate Spot Gold pricing

@@ -1,5 +1,14 @@
 # 📝 Patch Notes
 
+## v1.7.2 - 2026-09-07
+### 🚀 Model Upgrade, Real-Time Gold Pricing & Cronjob Trigger Endpoints
+- **Upgrade to Active Gemini 3.6 & 3.5 Models:** อัปเกรดโมเดลหลักและ Fallback Candidate Pool เป็น `gemini-3.6-flash`, `gemini-3.5-flash`, และ `gemini-flash-latest` แก้ไขปัญหา 404 NOT FOUND จากโมเดลรุ่นเก่า (2.5, 2.0, 1.5) ที่ถูกยกเลิกใน API
+- **Direct TradingView Scanner Spot Gold Feed:** เพิ่ม TradingView Scanner API ดึงราคา Spot Gold สดตรงจากสถาบันการเงิน (`OANDA:XAUUSD`, `TVC:GOLD`, `FX:XAUUSD`) เป็นแหล่งข้อมูลหลัก เสริมด้วย Swissquote, Yahoo Finance และ Kraken Ticker ทำให้ราคาปัจจุบันตรงกับราคาตลาดโลกจริงแบบ Real-time
+- **Kraken Resilient OHLC Candles:** เพิ่ม Kraken Public OHLC (`PAXGUSD`) สำหรับไทม์เฟรม 15m และ 1d แก้ปัญหา Binance โดนบล็อก IP / Geoblock (403/451) บนคลาวด์เซิร์ฟเวอร์ในสหรัฐฯ (Render US Cluster) ทำให้การคำนวณ Indicator (SMA, RSI, MACD, BB, Stochastic) ทำงานได้ 100% ไม่มีหลุด
+- **Dynamic Real-Time Price Enforcement:** ปรับ Prompt ของ Chief Gold Trader ให้ใช้ตัวเลข `close_price` ล่าสุดจาก Tool แบบไดนามิก นำตัวเลขฮาร์ดโค้ดเก่าออก เพื่อให้ราคาสอดคล้องกับสภาวะตลาดจริงในระดับ ~$4,400 USD
+- **External Cronjob Web Endpoints:** ขยาย `keep_alive.py` รองรับ `/cron`, `/cronjob`, `/trigger`, `/scan`, `/run` ตอบกลับ 200 OK ทันทีและสั่งสแกนตลาดในพื้นหลัง เพื่อให้บริการอย่าง `cron-job.org` สามารถปลุก Render ไม่ให้หลับและสั่งกระตุ้นการส่งสัญญาณเทรดได้อัตโนมัติ
+- **Web Check Endpoints:** เพิ่ม `/check` และ `/checkgold` บน Web server เพื่อให้ผู้ใช้สามารถตรวจสอบสถานะและดูราคาทองคำผ่านหน้าเว็บ/บราวเซอร์ได้โดยตรง
+
 ## v1.7.1 - 2026-08-21
 ### 🚀 Upgraded Models & 503 High Demand Resilience
 - **Upgrade to Gemini 2.5 Flash / 2.5 Pro:** อัปเกรดโมเดลหลักเป็นโมเดลรุ่นใหม่ล่าสุด `gemini-2.5-flash` และ `gemini-2.5-pro` ซึ่งมีความแม่นยำและการคำนวณเชิง Quant สูงกว่าโมเดล 1.5 อย่างก้าวกระโดด
