@@ -3,9 +3,9 @@ from config import MIN_RR_RATIO
 
 logger = logging.getLogger(__name__)
 
-def validate_trade_plan(plan) -> bool:
+def validate_trade_plan(plan, snapshot=None) -> bool:
     """
-    Validates a TradePlan object to ensure SL/TP logic and RR is sound.
+    Validates a TradePlan object to ensure SL/TP logic, RR, and trend alignment is sound.
     If invalid, returns False.
     """
     if plan.action == "WAIT":
@@ -14,6 +14,16 @@ def validate_trade_plan(plan) -> bool:
     if plan.exact_entry_price <= 0 or plan.stop_loss <= 0 or plan.take_profit_1 <= 0:
         logger.error("Prices must be greater than 0.")
         return False
+
+    # Hard trend alignment check (Strict No-Counter-Trend Rule)
+    if snapshot and getattr(snapshot, "trend_structure", None):
+        trend = (snapshot.trend_structure or "").lower()
+        if "bearish" in trend and plan.action == "BUY":
+            logger.error("Trend is Bearish (price below SMA20); counter-trend BUY is strictly forbidden to prevent catching falling knives.")
+            return False
+        elif "bullish" in trend and plan.action == "SELL":
+            logger.error("Trend is Bullish (price above SMA20); counter-trend SELL is strictly forbidden to prevent fighting an uptrend.")
+            return False
 
     # Calculate Risk
     risk = abs(plan.exact_entry_price - plan.stop_loss)

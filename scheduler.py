@@ -79,17 +79,27 @@ def run_trading_cycle(is_routine: bool = False):
                 )
                 return None
 
-    # 4. Quantitative Pre-Filter (Zero-Cost LLM Saver)
-    if not is_routine:
-        if not snapshot:
-            logger.warning("No technical snapshot available for pre-filter. Skipping scanner cycle.")
-            return None
-            
-        is_ready, bias, readiness_reason = evaluate_market_readiness(snapshot)
-        if not is_ready:
-            logger.info(f"Pre-filter check: NOT READY ({readiness_reason}). Skipping LLM to save quota.")
-            return None
-        logger.info(f"Pre-filter PASSED: Suggested bias = {bias} ({readiness_reason}). Invoking CrewAI...")
+    # 4. Quantitative Pre-Filter (Zero-Cost LLM Saver & Quality Enforcer)
+    if not snapshot:
+        logger.warning("No technical snapshot available. Skipping trading cycle.")
+        return None
+
+    is_ready, bias, readiness_reason = evaluate_market_readiness(snapshot)
+    if not is_ready:
+        logger.info(f"Market pre-filter: NOT READY ({readiness_reason}).")
+        if is_routine:
+            final_message = f"📊 **Routine Market Update (ทุก 4 ชม.)**\n"
+            final_message += f"**Symbol:** {SYMBOL} (Patch 1.7.4)\n"
+            final_message += f"**Action:** WAIT (รอสัญญาณแต้มต่อสูง Win Rate ≥ 70%)\n"
+            final_message += f"**Quota วันนี้:** {daily_signals_sent}/{MAX_DAILY_SIGNALS} ไม้\n\n"
+            final_message += f"**สถานะตลาด:** {readiness_reason}\n\n"
+            final_message += f"**Current Price:** ${snapshot.close_price:.2f} | **Trend:** {snapshot.trend_structure}\n\n"
+            final_message += "*หมายเหตุ: ระบบ Sniper Scanner จะคอยจับตาดูตลาดทุก 15 นาที หากมีจังหวะเข้าทำกำไร จะแจ้งเตือนทันทีครับ*"
+            send_discord_notify(final_message)
+            logger.info("Sent Routine WAIT update based on pre-filter.")
+        return None
+
+    logger.info(f"Pre-filter PASSED: Suggested bias = {bias} ({readiness_reason}). Invoking CrewAI...")
     
     candidate_models = [
         LLM_MODEL,
@@ -158,10 +168,10 @@ def run_trading_cycle(is_routine: bool = False):
                 send_discord_notify(f"❌ Exception in trading cycle: {last_error or 'Agent failed to return a valid TradePlan.'}")
             return None
              
-        # Validate logic (Enforces MIN_RR_RATIO >= 1.5 and SL >= $5.0)
-        is_valid = validate_trade_plan(trade_plan)
+        # Validate logic (Enforces MIN_RR_RATIO >= 1.5, SL >= $5.0, and strict trend alignment)
+        is_valid = validate_trade_plan(trade_plan, snapshot=snapshot)
         if not is_valid:
-            logger.warning("Trade plan validation failed. Changing Action to WAIT.")
+            logger.warning("Trade plan validation failed (e.g. counter-trend, tight SL, or low RR). Changing Action to WAIT.")
             trade_plan.action = "WAIT"
             
         # Build Final Message

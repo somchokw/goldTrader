@@ -6,6 +6,12 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🛡️ Patch v1.7.4: Strict Trend Alignment & Anti-Knife-Catching Guard
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- ปิดช่องโหว่การรับมีด (Anti-Knife-Catching): เมื่อแนวโน้ม 15m เป็นขาลง (Bearish) ล็อกห้ามออกคำสั่ง BUY เด็ดขาด และเมื่อเป็นขาขึ้น (Bullish) ล็อกห้ามออกคำสั่ง SELL เด็ดขาด
+- Hard Validation: อัปเดต `validators.py` ตรวจจับความสอดคล้องกับแนวโน้มราคา หาก AI ส่งสัญญาณสวนเทรนด์จะถูกแปลงเป็น `WAIT` ทันทีในระดับ Python
+- Routine Pre-Filter: ปรับรอบ Routine Update (ทุก 4 ชม.) ให้ผ่าน `evaluate_market_readiness` ก่อน หากตลาดไม่มีแต้มต่อจะส่งสถานะ `WAIT` โดยไม่เรียกใช้ LLM ป้องกันการถูกบีบให้ออกออเดอร์
+
 ### 🎯 Patch v1.7.3: High-Conviction Sniper Controls, Zero-Cost Pre-Filter & Daily Quota Cap (Win Rate ≥ 70%)
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - เพิ่ม Quantitative Pre-Filter (`evaluate_market_readiness`) กรองสัญญาณด้วยคณิตศาสตร์ล้วนๆ ก่อนเรียกใช้ LLM ลดการกินเครดิต API ลง 90%

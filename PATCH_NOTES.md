@@ -1,5 +1,11 @@
 # 📝 Patch Notes
 
+## v1.7.4 - 2026-09-08
+### 🛡️ Strict Trend Alignment & Anti-Knife-Catching Guard
+- **Strict No-Counter-Trend Rule (ห้ามสวนเทรนด์ 100%):** ปิดจุดบกพร่องที่ทำให้เข้า BUY ไม้ 4407.81 ในขณะที่ราคาทองคำกำลังเทขายหนัก โดยล็อกกฎเหล็กว่าหากแนวโน้ม 15m เป็นขาลง (Bearish / ราคาอยู่ใต้ SMA20) **ห้ามออกคำสั่ง BUY โดยเด็ดขาด** (ห้ามรับมีดที่กำลังร่วง) และหากแนวโน้มเป็นขาขึ้น (Bullish) **ห้ามออกคำสั่ง SELL โดยเด็ดขาด**
+- **Hard Python Trend Validation:** อัปเดต `validators.py` ให้ตรวจสอบความสอดคล้องของทิศทางออเดอร์กับโครงสร้างเทรนด์จริง หาก AI เผลอออกสัญญาณสวนเทรนด์ ระบบจะดักจับและเปลี่ยน Action เป็น `WAIT` ทันทีในระดับโค้ด
+- **Pre-Filter Enforcement on Routine Cycles:** ปรับให้รอบ Routine Update (ทุก 4 ชม.) ต้องผ่านการตรวจเช็ค `evaluate_market_readiness` เช่นเดียวกับ Scanner หากตลาดยังไม่เกิด Setup ที่แต้มต่อสูง ระบบจะส่งสรุปสถานะตลาดพร้อม Action `WAIT` โดยไม่เรียกใช้ LLM ป้องกันการถูกบังคับออกออเดอร์ในรอบ Routine และประหยัดเครดิต API ได้ 100%
+
 ## v1.7.3 - 2026-09-08
 ### 🎯 High-Conviction Sniper Controls, Zero-Cost Pre-Filter & Daily Quota Cap (Win Rate ≥ 70%)
 - **Quantitative Pre-Filter (Zero-Cost LLM Saver):** คัดกรองสัญญาณในระดับ Python ด้วยฟังก์ชัน `evaluate_market_readiness` ตรวจสอบ Stochastic (8,3,3), RSI (14), Bollinger Bands และแนวโน้ม SMA20 ก่อนเรียกใช้ LLM หากกราฟอยู่ในช่วง Sideways หรือไม่เกิด Pullback ที่คุ้มค่า จะตัดจบที่ WAIT ทันทีโดยไม่ต้องรัน CrewAI ลดการกินเครดิต Gemini API ลงกว่า 90%
