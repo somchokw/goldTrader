@@ -86,17 +86,7 @@ def run_trading_cycle(is_routine: bool = False):
 
     is_ready, bias, readiness_reason = evaluate_market_readiness(snapshot)
     if not is_ready:
-        logger.info(f"Market pre-filter: NOT READY ({readiness_reason}).")
-        if is_routine:
-            final_message = f"📊 **Routine Market Update (ทุก 4 ชม.)**\n"
-            final_message += f"**Symbol:** {SYMBOL} (Patch 1.7.4)\n"
-            final_message += f"**Action:** WAIT (รอสัญญาณแต้มต่อสูง Win Rate ≥ 70%)\n"
-            final_message += f"**Quota วันนี้:** {daily_signals_sent}/{MAX_DAILY_SIGNALS} ไม้\n\n"
-            final_message += f"**สถานะตลาด:** {readiness_reason}\n\n"
-            final_message += f"**Current Price:** ${snapshot.close_price:.2f} | **Trend:** {snapshot.trend_structure}\n\n"
-            final_message += "*หมายเหตุ: ระบบ Sniper Scanner จะคอยจับตาดูตลาดทุก 15 นาที หากมีจังหวะเข้าทำกำไร จะแจ้งเตือนทันทีครับ*"
-            send_discord_notify(final_message)
-            logger.info("Sent Routine WAIT update based on pre-filter.")
+        logger.info(f"Market pre-filter: NOT READY ({readiness_reason}). Staying silent.")
         return None
 
     logger.info(f"Pre-filter PASSED: Suggested bias = {bias} ({readiness_reason}). Invoking CrewAI...")
@@ -148,7 +138,7 @@ def run_trading_cycle(is_routine: bool = False):
             err_str = str(last_error or '')
             logger.error(f"Failed to parse TradePlan from Agent output (all candidate models tried). Last error: {last_error}")
             
-            # Graceful Credit Depletion / Quota Exhaustion Alert (Patch 1.7.4)
+            # Graceful Credit Depletion / Quota Exhaustion Alert
             if "prepayment credits are depleted" in err_str or "RESOURCE_EXHAUSTED" in err_str or "429" in err_str:
                 if not credit_exhaustion_notified:
                     credit_exhaustion_notified = True
@@ -165,7 +155,7 @@ def run_trading_cycle(is_routine: bool = False):
                 else:
                     logger.warning("Gemini credit depleted. Suppressing repetitive Discord error spam.")
             else:
-                send_discord_notify(f"❌ Exception in trading cycle: {last_error or 'Agent failed to return a valid TradePlan.'}")
+                logger.warning(f"Failed to parse TradePlan: {last_error}")
             return None
              
         # Validate logic (Enforces MIN_RR_RATIO >= 1.5, SL >= $5.0, and strict trend alignment)
@@ -174,24 +164,12 @@ def run_trading_cycle(is_routine: bool = False):
             logger.warning("Trade plan validation failed (e.g. counter-trend, tight SL, or low RR). Changing Action to WAIT.")
             trade_plan.action = "WAIT"
             
-        # Build Final Message
+        # SILENCE ENFORCEMENT: If Action is WAIT, NEVER notify Discord!
         if trade_plan.action == "WAIT":
-            if not is_routine:
-                logger.info("Trade plan is WAIT (Scanner). Skipping Discord notification to avoid spam.")
-                return trade_plan
-            else:
-                # Routine update for WAIT
-                final_message = f"📊 **Routine Market Update (ทุก 4 ชม.)**\n"
-                final_message += f"**Symbol:** {SYMBOL}\n"
-                final_message += f"**Action:** WAIT (รอสัญญาณที่มีแต้มต่อสูง Win Rate ≥ 70%)\n"
-                final_message += f"**Quota วันนี้:** {daily_signals_sent}/{MAX_DAILY_SIGNALS} ไม้\n\n"
-                final_message += f"**Rationale:**\n{trade_plan.rationale}\n\n"
-                final_message += "*หมายเหตุ: ระบบ Sniper Scanner จะคอยจับตาดูตลาดทุก 15 นาที หากมีจังหวะเข้าทำกำไร จะแจ้งเตือนทันทีครับ*"
-                send_discord_notify(final_message)
-                logger.info("Sent Routine WAIT update.")
-                return trade_plan
+            logger.info("Trade plan is WAIT. Staying completely silent as requested by user.")
+            return trade_plan
 
-        # It's a BUY/SELL signal!
+        # ONLY notify when there is a real, high-conviction BUY or SELL signal!
         risk = abs(trade_plan.exact_entry_price - trade_plan.stop_loss)
         reward = abs(trade_plan.take_profit_1 - trade_plan.exact_entry_price)
         rr_ratio = reward / risk if risk > 0 else 0.0
@@ -201,8 +179,8 @@ def run_trading_cycle(is_routine: bool = False):
         last_signal_price = trade_plan.exact_entry_price
         last_signal_action = trade_plan.action
 
-        final_message = f"🚨 **High-Conviction Sniper Signal!** 🚨\n\n" if not is_routine else f"📊 **Routine Market Update (มีสัญญาณเข้าเทรด!)**\n\n"
-        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.7.3)\n"
+        final_message = f"🚨 **High-Conviction Sniper Signal!** 🚨\n\n"
+        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.7.5)\n"
         final_message += f"**Action:** {trade_plan.action}\n"
         final_message += f"**Quota วันนี้:** [ไม้ที่ {daily_signals_sent}/{MAX_DAILY_SIGNALS}]\n"
         if getattr(trade_plan, 'trade_style', None):
@@ -219,35 +197,22 @@ def run_trading_cycle(is_routine: bool = False):
         final_message += "\n---\n**โปรดให้คะแนนความแม่นยำและเหตุผลของแผนนี้ (0-10) โดยพิมพ์ตัวเลขลงในช่องแชทได้เลยครับ** 👇"
         
         send_discord_notify(final_message)
-        logger.info(f"Trading signal sent successfully ({daily_signals_sent}/{MAX_DAILY_SIGNALS}).")
+        logger.info(f"Sniper signal sent successfully ({daily_signals_sent}/{MAX_DAILY_SIGNALS}).")
         return trade_plan
         
     except Exception as e:
         logger.error(f"Error during trading cycle: {e}", exc_info=True)
-        send_discord_notify(f"❌ Exception in trading cycle: {e}")
         return None
-
-def _run_scanner():
-    run_trading_cycle(is_routine=False)
-
-def _run_routine():
-    run_trading_cycle(is_routine=True)
 
 def start_scheduler():
     if not GEMINI_API_KEY:
         logger.error("GEMINI_API_KEY is missing! Fail fast.")
         exit(1)
         
-    logger.info("=== Gold Trading Bot Started ===")
+    logger.info("=== Gold Trading Bot Started (Sniper Mode Only - Silent on WAIT) ===")
     
-    # Run routine once immediately
-    _run_routine()
-    
-    # Schedule Sniper Scanner every 15 minutes
-    schedule.every(15).minutes.do(_run_scanner)
-    
-    # Schedule Routine Report every 4 hours
-    schedule.every(4).hours.do(_run_routine)
+    # Schedule Sniper Scanner every 15 minutes (Completely silent unless high-conviction signal is found)
+    schedule.every(15).minutes.do(run_trading_cycle)
     
     try:
         while True:
@@ -255,3 +220,4 @@ def start_scheduler():
             time.sleep(60)
     except KeyboardInterrupt:
         logger.info("Graceful shutdown requested. Exiting.")
+

@@ -1,5 +1,12 @@
 # 📝 Patch Notes
 
+## v1.7.5 - 2026-09-08
+### 🔇 Pure Sniper Mode: Total Silence on WAIT & Permanent Removal of Routine Notifications
+- **Permanent Removal of Routine Loops:** ถอดระบบรายงานประจำรอบ 4 ชั่วโมง (`routine_loop` และ `_run_routine`) ออกจากระบบ 100% ตามความต้องการของผู้ใช้ บอทจะไม่ส่งข้อความรายงานตามเวลาอีกต่อไป
+- **Absolute Silence on WAIT:** ปรับให้ระบบเงียบสนิทเมื่อไม่มีสัญญาณเทรด (Action = WAIT) ไม่ส่งข้อความใดๆ เข้า Discord แม้แต่ข้อความเดียว
+- **Notify Only on Real High-Conviction Signals:** บอทจะแจ้งเตือนเข้า Discord เฉพาะเมื่อพบสัญญาณ BUY หรือ SELL ที่ผ่านตัวกรองทุกด่านครบถ้วน (Win Rate ≥ 70%, Trend-Aligned, Pullback Setup, RR ≥ 1.5, SL Buffer ≥ $5.0) เท่านั้น
+- **Updated Discord Commands:** ปรับปรุงคำสั่ง `/check` และ `#check` ให้ระบุสถานะเป็น "Sniper Only: ซุ่มยิงเงียบๆ ไม่ส่งข้อความประจำรอบ"
+
 ## v1.7.4 - 2026-09-08
 ### 🛡️ Strict Trend Alignment & Anti-Knife-Catching Guard
 - **Strict No-Counter-Trend Rule (ห้ามสวนเทรนด์ 100%):** ปิดจุดบกพร่องที่ทำให้เข้า BUY ไม้ 4407.81 ในขณะที่ราคาทองคำกำลังเทขายหนัก โดยล็อกกฎเหล็กว่าหากแนวโน้ม 15m เป็นขาลง (Bearish / ราคาอยู่ใต้ SMA20) **ห้ามออกคำสั่ง BUY โดยเด็ดขาด** (ห้ามรับมีดที่กำลังร่วง) และหากแนวโน้มเป็นขาขึ้น (Bullish) **ห้ามออกคำสั่ง SELL โดยเด็ดขาด**

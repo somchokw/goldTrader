@@ -58,18 +58,6 @@ def save_feedback(user_id, user_name, score, is_auto=False):
 
 trade_lock = asyncio.Lock()
 
-@tasks.loop(hours=4)
-async def routine_loop():
-    global last_auto_plan
-    try:
-        logger.info("Running Routine Market Update (4 Hours) via Discord loop.")
-        async with trade_lock:
-            plan = await asyncio.to_thread(run_trading_cycle, True)
-            if plan and plan.action != "WAIT":
-                last_auto_plan = plan
-    except Exception as e:
-        logger.error(f"Error in routine_loop: {e}")
-
 @tasks.loop(minutes=15)
 async def scanner_loop():
     global last_auto_plan
@@ -85,14 +73,9 @@ async def scanner_loop():
     except Exception as e:
         logger.error(f"Error in scanner_loop: {e}")
 
-@routine_loop.before_loop
-async def before_routine_loop():
-    await client.wait_until_ready()
-
 @scanner_loop.before_loop
 async def before_scanner_loop():
     await client.wait_until_ready()
-    # Stagger scanner loop so it doesn't collide with routine loop on startup
     await asyncio.sleep(60)
 
 @tree.command(name="check", description="ตรวจสอบสถานะการทำงานของบอททองคำและโควต้าสัญญาณวันนี้")
@@ -101,12 +84,12 @@ async def slash_check(interaction: discord.Interaction):
         from scheduler import get_quota_status
         quota = get_quota_status()
         reply = (
-            f"✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)\n"
+            f"✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.5 - Sniper Only)\n"
             f"📊 **โควต้าสัญญาณวันนี้:** {quota['sent']}/{quota['max']} ไม้ (เหลืออีก {quota['remaining']} ไม้)\n"
-            f"🎯 **เป้าหมาย:** สัญญาณแต้มต่อสูง Win Rate ≥ 70% (คุม R:R ≥ 1.5, SL ไม่ต่ำกว่า $5.0)"
+            f"🎯 **โหมดการทำงาน:** ซุ่มยิงเฉพาะสัญญาณแต้มต่อสูง (Win Rate ≥ 70%) เท่านั้น ระบบจะไม่ส่งรายงานประจำรอบมารบกวน"
         )
     except Exception:
-        reply = "✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)"
+        reply = "✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.5 - Sniper Only)"
     await interaction.response.send_message(reply)
 
 @tree.command(name="checkgold", description="ดูราคาทองคำ XAUUSD และสถิติเทคนิคล่าสุดแบบ Real-time (15m)")
@@ -151,8 +134,6 @@ async def on_ready():
         logger.info(f'Successfully synced {len(synced)} Slash Command(s): {[cmd.name for cmd in synced]}')
     except Exception as e:
         logger.warning(f'Failed to sync slash commands: {e}')
-    if not routine_loop.is_running():
-        routine_loop.start()
     if not scanner_loop.is_running():
         scanner_loop.start()
 
@@ -218,21 +199,21 @@ async def on_message(message):
             from scheduler import get_quota_status
             quota = get_quota_status()
             reply = (
-                f"✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)\n"
+                f"✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.5 - Sniper Only)\n"
                 f"📊 **โควต้าสัญญาณวันนี้:** {quota['sent']}/{quota['max']} ไม้ (เหลืออีก {quota['remaining']} ไม้)\n"
-                f"🎯 **เป้าหมาย:** สัญญาณแต้มต่อสูง Win Rate ≥ 70% (คุม R:R ≥ 1.5, SL ไม่ต่ำกว่า $5.0)"
+                f"🎯 **โหมดการทำงาน:** ซุ่มยิงเฉพาะสัญญาณแต้มต่อสูง (Win Rate ≥ 70%) เท่านั้น ระบบจะไม่ส่งรายงานประจำรอบมารบกวน"
             )
         except Exception:
-            reply = "✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)"
+            reply = "✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.5 - Sniper Only)"
         await message.reply(reply)
         return
 
     # Reply if mentioned without specific command
     if is_bot_mentioned and not message.attachments:
         await message.reply(
-            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.7.3)\n"
+            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.7.5 - Sniper Only)\n"
             "คำสั่งที่ใช้งานได้:\n"
-            "• `/check` หรือ `#check` : ตรวจสอบสถานะการเชื่อมต่อและโควต้าวันนี้\n"
+            "• `/check` หรือ `#check` : ตรวจสอบสถานะการทำงานและโควต้าวันนี้\n"
             "• `/checkgold` หรือ `#checkgold` : ดูราคา Real-time และความพร้อมเข้าเทรด Sniper\n"
             "• หรือแนบรูปภาพพอร์ต/กราฟ เพื่อให้ AI ช่วยวิเคราะห์ไม้เทรดได้ทันทีครับ"
         )

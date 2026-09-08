@@ -9,15 +9,15 @@ logger = logging.getLogger(__name__)
 # Mutex to ensure only one web-triggered trading cycle runs concurrently
 _scan_lock = Lock()
 
-def _trigger_background_cycle(is_routine: bool = False):
+def _trigger_background_cycle():
     def worker():
         if not _scan_lock.acquire(blocking=False):
             logger.info("Web-triggered cycle skipped: Another trading cycle is already in progress.")
             return
         try:
-            logger.info(f"Web-triggered Trading Cycle started (is_routine={is_routine})...")
+            logger.info("Web-triggered Sniper Trading Cycle started...")
             from scheduler import run_trading_cycle
-            run_trading_cycle(is_routine=is_routine)
+            run_trading_cycle()
         except Exception as e:
             logger.error(f"Error in web-triggered trading cycle: {e}", exc_info=True)
         finally:
@@ -38,9 +38,9 @@ def home():
             "status": "ok",
             "service": "Gold Trading AI",
             "message": "I'm alive!",
-            "patch": "1.7.2"
+            "patch": "1.7.5"
         }), 200
-    return "I'm alive! Gold Trading AI is running (Patch 1.7.2).", 200
+    return "I'm alive! Gold Trading AI is running (Patch 1.7.5 - Sniper Only).", 200
 
 @app.route('/cron', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])
 @app.route('/cronjob', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])
@@ -52,17 +52,14 @@ def trigger_cron():
     if request.method == 'OPTIONS':
         return '', 204
     
-    # Check if caller wants routine (4h) or sniper (15m) scan
-    is_routine = request.args.get('routine', 'false').lower() == 'true'
-    _trigger_background_cycle(is_routine=is_routine)
+    _trigger_background_cycle()
     
     return jsonify({
         "status": "ok",
         "service": "Gold Trading AI",
         "action": "triggered_scan",
-        "routine": is_routine,
-        "message": "Cronjob received successfully. Market scan initiated in background.",
-        "patch": "1.7.2"
+        "message": "Cronjob received successfully. Silent sniper scan initiated in background.",
+        "patch": "1.7.5"
     }), 200
 
 @app.route('/check', methods=['GET', 'HEAD', 'POST', 'OPTIONS'])

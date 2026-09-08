@@ -6,6 +6,12 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🔇 Patch v1.7.5: Pure Sniper Mode (Total Silence on WAIT & No Routine Notifications)
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- ปิดระบบแจ้งเตือนแบบประจำรอบ (Routine Periodic Update 4 ชม.) ออกจากระบบ 100% ตามคำสั่งของผู้ใช้
+- โหมดเงียบสนิท (Total Silence on WAIT): หากตลาดยังไม่มีจังหวะเข้าเทรด หรืออยู่ในช่วงพักตัว ระบบจะไม่ส่งข้อความใดๆ เข้า Discord ทั้งสิ้น
+- แจ้งเตือนเฉพาะไม้ที่มีแต้มต่อสูง (Win Rate ≥ 70%) ที่ผ่านตัวกรองครบถ้วนเท่านั้น
+
 ### 🛡️ Patch v1.7.4: Strict Trend Alignment & Anti-Knife-Catching Guard
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - ปิดช่องโหว่การรับมีด (Anti-Knife-Catching): เมื่อแนวโน้ม 15m เป็นขาลง (Bearish) ล็อกห้ามออกคำสั่ง BUY เด็ดขาด และเมื่อเป็นขาขึ้น (Bullish) ล็อกห้ามออกคำสั่ง SELL เด็ดขาด
