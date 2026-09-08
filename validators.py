@@ -25,6 +25,10 @@ def validate_trade_plan(plan) -> bool:
     reward = abs(plan.take_profit_1 - plan.exact_entry_price)
     rr_ratio = reward / risk
     
+    if risk < 5.0:
+        logger.error(f"Stop Loss distance (${risk:.2f}) is too tight (< $5.00) for Gold volatility; high risk of stop hunt.")
+        return False
+
     if rr_ratio < MIN_RR_RATIO:
         logger.error(f"Risk/Reward Ratio {rr_ratio:.2f} is below minimum {MIN_RR_RATIO}.")
         return False

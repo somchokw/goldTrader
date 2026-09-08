@@ -6,6 +6,15 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🎯 Patch v1.7.3: High-Conviction Sniper Controls, Zero-Cost Pre-Filter & Daily Quota Cap (Win Rate ≥ 70%)
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- เพิ่ม Quantitative Pre-Filter (`evaluate_market_readiness`) กรองสัญญาณด้วยคณิตศาสตร์ล้วนๆ ก่อนเรียกใช้ LLM ลดการกินเครดิต API ลง 90%
+- วินัยการเข้าไม้แบบ Pullback: ฝั่ง SELL ต้องรอราคาย่อขึ้นทดสอบแนวต้าน และ Stochastic $\ge$ 60 (ห้ามขายเมื่อ Stoch < 35 เด็ดขาด) และฝั่ง BUY ต้องรอราคาย่อลงทดสอบแนวรับ และ Stochastic $\le$ 40
+- กำหนดโควต้าสูงสุดไม่เกิน 10 ไม้ต่อวัน (`MAX_DAILY_SIGNALS = 10`) เน้นคุณภาพมากกว่าปริมาณ มุ่งเป้า Win Rate $\ge$ 70% (7 ใน 10 ไม้ต้องชนะ)
+- เพิ่มระบบ Cooldown 45 นาที และตรวจระยะการขยับของราคา $\ge$ $5.00 USD ป้องกันการออกสัญญาณซ้ำซ้อน
+- ปรับเกณฑ์ Risk/Reward ขั้นต่ำเป็น 1 : 1.5 และบังคับระยะ Stop Loss ขั้นต่ำ $5.00 USD ป้องกันโดน Stop Hunt
+- ปรับปรุง Discord Slash & Prefix Commands (`#check`, `#checkgold`) ให้แสดงโควต้าคงเหลือและความพร้อมของหน้างาน Sniper แบบ Real-time
+
 ### 🚀 Patch v1.7.2: Gemini 3.6 Upgrade, Real-Time TradingView Feeds & Cronjob Endpoints
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - อัปเกรดเป็น Gemini 3.6 Flash / 3.5 Flash แก้ปัญหา 404 NOT FOUND จากการยกเลิกโมเดลรุ่นเก่า

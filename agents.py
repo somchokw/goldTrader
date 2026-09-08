@@ -71,11 +71,12 @@ def create_gold_crew(model_name: str = None):
 
     chief_trader = Agent(
         role="Chief Gold Trader",
-        goal="นำข้อมูลทั้งหมดจาก Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดขั้นสุดท้าย โดยต้องคุม Risk/Reward ให้คุ้มค่า",
+        goal="นำข้อมูล Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดที่มี Win Rate สูงเกิน 70% (อย่างน้อย 7 ใน 10 ไม้ต้องชนะ) โดยคุม Risk/Reward >= 1.5",
         backstory=(
-            "คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุน คุณเป็นสาย Sniper Execution ที่เน้นจุดเข้าแม่นยำเป๊ะๆ\n"
-            "กฎเหล็กเรื่องราคา: คุณต้องใช้ตัวเลขราคาตลาดสดปัจจุบัน (close_price) จาก Tool 'Fetch Technical Data' เท่านั้น\n"
-            "ห้ามจำหรือเดาราคาเก่าในอดีต (เช่น 1,900 - 2,400 USD) โดยเด็ดขาด ทุกจุดเข้า Entry, SL, TP ต้องอ้างอิงจากราคาปัจจุบันในกราฟ 15m ล่าสุดเท่านั้น"
+            "คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุนระดับมืออาชีพที่ยึดหลัก Sniper Execution\n"
+            "เป้าหมายสูงสุดคือ Win Rate >= 70% เทรดเฉพาะจังหวะที่มีแต้มต่อสูงชัดเจนเท่านั้น ไม่เทรดพร่ำเพรื่อ ไม่ไล่ราคาที่ก้นเหวหรือยอดดอย\n"
+            "กฎเหล็กเรื่องราคา: ใช้ราคาตลาดสดปัจจุบัน (close_price) จาก Tool 'Fetch Technical Data' เท่านั้น\n"
+            "ห้ามจำหรือเดาราคาเก่าในอดีต (เช่น 1,900 - 2,400 USD) ทุกจุดเข้า Entry, SL, TP ต้องอ้างอิงจากราคาปัจจุบันในกราฟ 15m ล่าสุดเท่านั้น"
         ),
         verbose=True,
         allow_delegation=False,
@@ -100,7 +101,7 @@ def create_gold_crew(model_name: str = None):
     )
 
     technical_task = Task(
-        description="Fetch gold market data (1d and 15m). Compute technical indicators (RSI, MACD, BB) and support/resistance levels from swing_high/swing_low.",
+        description="Fetch gold market data (1d and 15m). Compute technical indicators (RSI, MACD, BB, Stochastic) and support/resistance levels from swing_high/swing_low.",
         expected_output="A JSON object containing current market price, RSI, trend, support and resistance levels.",
         agent=technical_analyst
     )
@@ -113,17 +114,18 @@ def create_gold_crew(model_name: str = None):
             "- Check the exact 'close_price' in the 15m Data from 'Fetch Technical Data' (reflecting the live market price).\n"
             "- All trade prices ('exact_entry_price', 'stop_loss', 'take_profit_1', 'take_profit_2') MUST be located directly around the current 15m close price.\n"
             "- NEVER use or hallucinate outdated historical gold prices (e.g. 1900-2400 USD). Base all calculations strictly on the live snapshot.\n\n"
-            "SIGNAL EXECUTION RULES (Scan for both SHORT-TERM and LONG-TERM opportunities):\n"
-            "1. Analyze both 15m (Intraday/Scalp) and 1d (Daily/Swing) structures.\n"
-            "2. BUY OPPORTUNITY (ไม้สั้นหรือไม้ยาว):\n"
-            "   - ไม้สั้น (Scalp/Intraday): เกิดสัญญาณกลับตัวใน 15m เช่น Stochastic (< 30) ตัดขึ้น, RSI เริ่มฟื้นตัวจากโซนล่าง/BB Lower, หรือ Pullback ทดสอบแนวรับย่อย/เส้นค่าเฉลี่ย\n"
-            "   - ไม้ยาว (Swing/Trend): กราฟภาพรวมเป็น Bullish หรือ Breakout เหนือแนวต้านสำคัญ โดยตั้งเป้า TP รันเทรนด์ตามแนวต้านใหญ่\n"
-            "3. SELL OPPORTUNITY (ไม้สั้นหรือไม้ยาว):\n"
-            "   - ไม้สั้น (Scalp/Intraday): เกิดสัญญาณกลับตัวลงใน 15m เช่น Stochastic (> 70) ตัดลง, RSI ติดโซนบน/BB Upper, หรือ Rejection ที่แนวต้านย่อย\n"
-            "   - ไม้ยาว (Swing/Trend): กราฟภาพรวมเป็น Bearish หรือ Breakdown ใต้แนวรับสำคัญ โดยตั้งเป้า TP ตามแนวรับใหญ่\n"
-            "4. Whenever there is a valid setup for either short-term (Scalp) or long-term (Swing), output 'BUY' or 'SELL' IMMEDIATELY and specify 'trade_style'.\n"
-            "5. Only output 'WAIT' if the market has zero momentum and no actionable setup.\n"
-            "6. Ensure Risk/Reward Ratio is >= 1.0 (Reward distance MUST be greater than or equal to Risk distance)."
+            "HIGH WIN-RATE SNIPER RULES (TARGET WIN RATE >= 70% / 7 out of 10 wins):\n"
+            "1. STRICT PULLBACK TRADING ONLY - ABSOLUTELY NO CHASING:\n"
+            "   - FOR SELL: NEVER sell when Stochastic %K < 35 or when price is already at the bottom near Lower Bollinger Band! Only SELL when price has pulled back UP into resistance (SMA20, Upper BB, or Swing High) and Stochastic %K is >= 60 (exhaustion/reversal).\n"
+            "   - FOR BUY: NEVER buy when Stochastic %K > 65 or when price is already at the peak near Upper Bollinger Band! Only BUY when price has dipped DOWN into support (SMA20, Lower BB, or Swing Low) and Stochastic %K is <= 40 (reversal from low).\n"
+            "2. STOP LOSS DISCIPLINE (PREVENT STOP HUNTS):\n"
+            "   - Stop Loss MUST be placed beyond recent market structure (Swing High for SELL, Swing Low for BUY) with a safety buffer of at least $5 to $10 USD (or 1x ATR).\n"
+            "   - NEVER set ultra-tight Stop Losses (< $5.00) that get stopped out by normal market noise.\n"
+            "3. RISK / REWARD RATIO >= 1.5:\n"
+            "   - Reward distance (|TP1 - Entry|) MUST be at least 1.5x of Risk distance (|Entry - SL|).\n"
+            "4. HIGH CONVICTION THRESHOLD:\n"
+            "   - If the setup does not have at least 70% confidence or is in the middle of a choppy range, output 'WAIT'.\n"
+            "   - It is far better to WAIT than to take a low-probability trade. Maximum 10 high-quality trades per day."
         ),
         expected_output="A JSON object conforming strictly to the TradePlan schema.",
         agent=chief_trader,

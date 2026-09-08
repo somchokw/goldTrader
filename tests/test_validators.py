@@ -34,12 +34,24 @@ def test_validate_sell_plan():
     assert validate_trade_plan(plan) == True
 
 def test_validate_rr_ratio():
-    # Risk = 10, Reward = 5, RR = 0.5 (Less than 1.0 minimum)
+    # Risk = 10, Reward = 12, RR = 1.2 (Less than 1.5 minimum)
     plan = TradePlan(
         action="BUY",
         exact_entry_price=2000.0,
         stop_loss=1990.0,
-        take_profit_1=2005.0,
+        take_profit_1=2012.0,
         rationale="Test"
     )
     assert validate_trade_plan(plan) == False
+
+def test_validate_tight_stop_loss():
+    # Risk = 3.0 (< 5.0 USD minimum)
+    plan = TradePlan(
+        action="BUY",
+        exact_entry_price=2000.0,
+        stop_loss=1997.0,
+        take_profit_1=2010.0,
+        rationale="Test"
+    )
+    assert validate_trade_plan(plan) == False
+

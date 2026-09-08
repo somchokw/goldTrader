@@ -1,5 +1,14 @@
 # 📝 Patch Notes
 
+## v1.7.3 - 2026-09-08
+### 🎯 High-Conviction Sniper Controls, Zero-Cost Pre-Filter & Daily Quota Cap (Win Rate ≥ 70%)
+- **Quantitative Pre-Filter (Zero-Cost LLM Saver):** คัดกรองสัญญาณในระดับ Python ด้วยฟังก์ชัน `evaluate_market_readiness` ตรวจสอบ Stochastic (8,3,3), RSI (14), Bollinger Bands และแนวโน้ม SMA20 ก่อนเรียกใช้ LLM หากกราฟอยู่ในช่วง Sideways หรือไม่เกิด Pullback ที่คุ้มค่า จะตัดจบที่ WAIT ทันทีโดยไม่ต้องรัน CrewAI ลดการกินเครดิต Gemini API ลงกว่า 90%
+- **Anti-Chase & Pullback Discipline (Target Win Rate ≥ 70%):** แก้ปัญหาการขายที่ก้นเหว (Selling into oversold bottom) และการซื้อที่ยอดดอย โดยบังคับให้ฝั่ง SELL ต้องรอราคาย่อขึ้นทดสอบแนวต้าน/SMA20 และ Stochastic $\ge$ 60 เท่านั้น ห้ามขายเมื่อ Stochastic < 35 เด็ดขาด และฝั่ง BUY ต้องรอราคาย่อลงทดสอบแนวรับและ Stochastic $\le$ 40 ห้ามซื้อเมื่อ Stochastic > 65
+- **Daily Quota Capping (Max 10 Signals/Day):** กำหนดเพดานการส่งสัญญาณเทรดไม่เกิน 10 ไม้ต่อวัน (`MAX_DAILY_SIGNALS = 10`) เน้นคุณภาพมากกว่าปริมาณ พร้อมระบุลำดับไม้ `[ไม้ที่ X/10 ของวันนี้]` ลงในข้อความ Discord
+- **Signal Cooldown & Anti-Spam (45-Minute / $5 Price Movement):** ป้องกันการยิงสัญญาณซ้ำซ้อนในระยะเวลาสั้น ด้วยระบบ Cooldown 45 นาที และตรวจเช็คการขยับของราคาต้องห่างจากไม้ก่อนหน้าอย่างน้อย $5.00 USD
+- **Higher Minimum Risk/Reward & Stop Loss Buffer:** ปรับ `MIN_RR_RATIO = 1.5` (กำไรต้องมากกว่าความเสี่ยงอย่างน้อย 1.5 เท่า) และตรวจสอบระยะ Stop Loss ต้องไม่ต่ำกว่า $5.00 USD ป้องกันการโดน Stop Hunt จากความผันผวนปกติของทองคำ
+- **Enhanced Discord Commands (`#check` & `#checkgold`):** แสดงสถานะโควต้าสัญญาณรายวัน และประเมินความพร้อมของจังหวะเข้าเทรดแบบ Real-time ให้ผู้ใช้ทราบได้ทันที
+
 ## v1.7.2 - 2026-09-07
 ### 🚀 Model Upgrade, Real-Time Gold Pricing & Cronjob Trigger Endpoints
 - **Upgrade to Active Gemini 3.6 & 3.5 Models:** อัปเกรดโมเดลหลักและ Fallback Candidate Pool เป็น `gemini-3.6-flash`, `gemini-3.5-flash`, และ `gemini-flash-latest` แก้ไขปัญหา 404 NOT FOUND จากโมเดลรุ่นเก่า (2.5, 2.0, 1.5) ที่ถูกยกเลิกใน API

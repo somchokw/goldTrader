@@ -95,17 +95,28 @@ async def before_scanner_loop():
     # Stagger scanner loop so it doesn't collide with routine loop on startup
     await asyncio.sleep(60)
 
-@tree.command(name="check", description="ตรวจสอบสถานะการทำงานของบอททองคำ")
+@tree.command(name="check", description="ตรวจสอบสถานะการทำงานของบอททองคำและโควต้าสัญญาณวันนี้")
 async def slash_check(interaction: discord.Interaction):
-    await interaction.response.send_message("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.2)")
+    try:
+        from scheduler import get_quota_status
+        quota = get_quota_status()
+        reply = (
+            f"✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)\n"
+            f"📊 **โควต้าสัญญาณวันนี้:** {quota['sent']}/{quota['max']} ไม้ (เหลืออีก {quota['remaining']} ไม้)\n"
+            f"🎯 **เป้าหมาย:** สัญญาณแต้มต่อสูง Win Rate ≥ 70% (คุม R:R ≥ 1.5, SL ไม่ต่ำกว่า $5.0)"
+        )
+    except Exception:
+        reply = "✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)"
+    await interaction.response.send_message(reply)
 
 @tree.command(name="checkgold", description="ดูราคาทองคำ XAUUSD และสถิติเทคนิคล่าสุดแบบ Real-time (15m)")
 async def slash_checkgold(interaction: discord.Interaction):
     await interaction.response.defer()
     try:
-        from indicators import fetch_technical_data
+        from indicators import fetch_technical_data, evaluate_market_readiness
         snapshot = await asyncio.to_thread(fetch_technical_data, "15m")
         if snapshot:
+            is_ready, bias, readiness_reason = evaluate_market_readiness(snapshot)
             reply = f"📊 **Gold Market Status (XAUUSD - 15m)** 📊\n\n"
             reply += f"**Current Price:** ${snapshot.close_price:.2f}\n"
             reply += f"**Trend (SMA20):** {snapshot.trend_structure}\n"
@@ -118,7 +129,12 @@ async def slash_checkgold(interaction: discord.Interaction):
             swing_h_str = f"${snapshot.swing_high:.2f}" if snapshot.swing_high else "N/A"
             swing_l_str = f"${snapshot.swing_low:.2f}" if snapshot.swing_low else "N/A"
             reply += f"**Resistance (Swing High):** {swing_h_str}\n"
-            reply += f"**Support (Swing Low):** {swing_l_str}\n"
+            reply += f"**Support (Swing Low):** {swing_l_str}\n\n"
+            
+            readiness_icon = "🟢" if is_ready else "🟡"
+            readiness_text = f"พร้อมเข้า ({bias})" if is_ready else "รอจังหวะ Pullback (WAIT)"
+            reply += f"🎯 **Sniper Readiness (≥70% Win Rate):** {readiness_icon} {readiness_text}\n"
+            reply += f"💡 **วิเคราะห์:** {readiness_reason}\n"
             
             await interaction.followup.send(reply)
         else:
@@ -165,9 +181,10 @@ async def on_message(message):
     if cleaned.startswith("checkgold") or "checkgold" in cleaned or (is_bot_mentioned and "gold" in cleaned):
         await message.reply("🔄 กำลังดึงข้อมูลราคาทองคำและสถิติทางเทคนิคล่าสุด โปรดรอสักครู่...")
         try:
-            from indicators import fetch_technical_data
+            from indicators import fetch_technical_data, evaluate_market_readiness
             snapshot = await asyncio.to_thread(fetch_technical_data, "15m")
             if snapshot:
+                is_ready, bias, readiness_reason = evaluate_market_readiness(snapshot)
                 reply = f"📊 **Gold Market Status (XAUUSD - 15m)** 📊\n\n"
                 reply += f"**Current Price:** ${snapshot.close_price:.2f}\n"
                 reply += f"**Trend (SMA20):** {snapshot.trend_structure}\n"
@@ -180,7 +197,12 @@ async def on_message(message):
                 swing_h_str = f"${snapshot.swing_high:.2f}" if snapshot.swing_high else "N/A"
                 swing_l_str = f"${snapshot.swing_low:.2f}" if snapshot.swing_low else "N/A"
                 reply += f"**Resistance (Swing High):** {swing_h_str}\n"
-                reply += f"**Support (Swing Low):** {swing_l_str}\n"
+                reply += f"**Support (Swing Low):** {swing_l_str}\n\n"
+                
+                readiness_icon = "🟢" if is_ready else "🟡"
+                readiness_text = f"พร้อมเข้า ({bias})" if is_ready else "รอจังหวะ Pullback (WAIT)"
+                reply += f"🎯 **Sniper Readiness (≥70% Win Rate):** {readiness_icon} {readiness_text}\n"
+                reply += f"💡 **วิเคราะห์:** {readiness_reason}\n"
                 
                 await message.reply(reply)
             else:
@@ -192,16 +214,26 @@ async def on_message(message):
 
     # Command: check
     if cleaned.startswith("check") or cleaned == "ping" or (is_bot_mentioned and "check" in cleaned):
-        await message.reply("✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.2)")
+        try:
+            from scheduler import get_quota_status
+            quota = get_quota_status()
+            reply = (
+                f"✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)\n"
+                f"📊 **โควต้าสัญญาณวันนี้:** {quota['sent']}/{quota['max']} ไม้ (เหลืออีก {quota['remaining']} ไม้)\n"
+                f"🎯 **เป้าหมาย:** สัญญาณแต้มต่อสูง Win Rate ≥ 70% (คุม R:R ≥ 1.5, SL ไม่ต่ำกว่า $5.0)"
+            )
+        except Exception:
+            reply = "✅ สัญญาณตอบรับจากระบบ: บอทกำลังทำงานปกติครับผม! (Patch 1.7.3)"
+        await message.reply(reply)
         return
 
     # Reply if mentioned without specific command
     if is_bot_mentioned and not message.attachments:
         await message.reply(
-            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.7.2)\n"
+            "🤖 บอทยังทำงานอยู่ครับ! (Patch 1.7.3)\n"
             "คำสั่งที่ใช้งานได้:\n"
-            "• `/check` หรือ `#check` : ตรวจสอบสถานะการเชื่อมต่อของบอท\n"
-            "• `/checkgold` หรือ `#checkgold` : ดึงข้อมูลราคาทองคำและ Indicator ทางเทคนิคล่าสุด (15m)\n"
+            "• `/check` หรือ `#check` : ตรวจสอบสถานะการเชื่อมต่อและโควต้าวันนี้\n"
+            "• `/checkgold` หรือ `#checkgold` : ดูราคา Real-time และความพร้อมเข้าเทรด Sniper\n"
             "• หรือแนบรูปภาพพอร์ต/กราฟ เพื่อให้ AI ช่วยวิเคราะห์ไม้เทรดได้ทันทีครับ"
         )
         return

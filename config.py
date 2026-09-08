@@ -33,6 +33,11 @@ DEFAULT_RISK_PERCENT = 1.0  # Safe mode 1%
 HIGH_RISK_PERCENT = 50.0    # Sniper mode 50%
 MAX_RISK_LIMIT = 50.0
 
-MIN_RR_RATIO = 1.0
+MIN_RR_RATIO = 1.5  # High win-rate target (Reward must be >= 1.5x Risk)
+
+# Rate Limiting & High-Win-Rate Sniper Controls (Patch 1.7.3)
+MAX_DAILY_SIGNALS = int(os.environ.get("MAX_DAILY_SIGNALS", 10))
+SIGNAL_COOLDOWN_MINUTES = int(os.environ.get("SIGNAL_COOLDOWN_MINUTES", 45))
+MIN_PRICE_CHANGE_FOR_NEW_SIGNAL = float(os.environ.get("MIN_PRICE_CHANGE_FOR_NEW_SIGNAL", 5.0))
 
 STALE_DATA_THRESHOLD_MINUTES = 45

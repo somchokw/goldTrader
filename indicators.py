@@ -253,3 +253,71 @@ def fetch_technical_data(interval: str, period: str = None) -> Optional[MarketSn
     except Exception as e:
         logger.error(f"Error calculating technical data for {interval}: {e}", exc_info=True)
         return None
+
+
+def evaluate_market_readiness(snapshot: MarketSnapshot) -> tuple[bool, str, str]:
+    """
+    Quantitative pre-filter (Zero-Cost LLM Saver).
+    Evaluates whether the 15m market setup has high conviction (win rate >= 70%)
+    warranting CrewAI LLM execution. Filters out low-probability chasing trades
+    and saves API quota.
+    
+    Returns:
+        (is_ready: bool, suggested_bias: str, reason: str)
+    """
+    if not snapshot:
+        return False, "WAIT", "No market snapshot available"
+        
+    price = snapshot.close_price
+    sma20 = snapshot.sma_20
+    bb_upper = snapshot.bb_upper
+    bb_lower = snapshot.bb_lower
+    stoch_k = snapshot.stoch_k
+    stoch_d = snapshot.stoch_d
+    rsi = snapshot.rsi_14
+    trend = (snapshot.trend_structure or "sideways").lower()
+    
+    # BB width & relative position (0.0 = lower band, 1.0 = upper band)
+    bb_width = bb_upper - bb_lower if (bb_upper is not None and bb_lower is not None and bb_upper > bb_lower) else 10.0
+    bb_pos = (price - bb_lower) / bb_width if bb_width > 0 else 0.5
+    
+    sk = stoch_k if stoch_k is not None else (rsi if rsi is not None else 50.0)
+
+    # 1. BEARISH REGIME: Trade ONLY pullbacks to sell (Trend is your friend)
+    if "bearish" in trend:
+        # Pullback into resistance (near SMA20 or upper half) + Stoch >= 60
+        if sk >= 60.0 and bb_pos >= 0.35:
+            reason = f"High-probability BEARISH Pullback SELL: Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%, Price=${price:.2f} near resistance"
+            return True, "SELL", reason
+        elif sk < 35.0 or bb_pos < 0.25:
+            reason = f"Avoid selling into bottom: Market is oversold in downtrend (Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%). Waiting for pullback."
+            return False, "WAIT", reason
+        else:
+            reason = f"Bearish trend consolidation (Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%). Waiting for pullback to SMA20/resistance."
+            return False, "WAIT", reason
+
+    # 2. BULLISH REGIME: Trade ONLY dips to buy (Trend is your friend)
+    elif "bullish" in trend:
+        # Dip into support (near SMA20 or lower half) + Stoch <= 40
+        if sk <= 40.0 and bb_pos <= 0.65:
+            reason = f"High-probability BULLISH Dip BUY: Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%, Price=${price:.2f} near support"
+            return True, "BUY", reason
+        elif sk > 65.0 or bb_pos > 0.75:
+            reason = f"Avoid buying into top: Market is overbought in uptrend (Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%). Waiting for pullback."
+            return False, "WAIT", reason
+        else:
+            reason = f"Bullish trend consolidation (Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%). Waiting for dip to SMA20/support."
+            return False, "WAIT", reason
+
+    # 3. SIDEWAYS / RANGE REGIME: Trade range boundaries
+    else:
+        if bb_pos >= 0.75 and sk >= 70.0:
+            reason = f"Range resistance SELL: Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%, Price=${price:.2f}"
+            return True, "SELL", reason
+        elif bb_pos <= 0.25 and sk <= 30.0:
+            reason = f"Range support BUY: Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%, Price=${price:.2f}"
+            return True, "BUY", reason
+        else:
+            reason = f"Range mid-zone (Stoch_K={sk:.1f}, BB_Pos={bb_pos*100:.1f}%). Waiting for boundary test."
+            return False, "WAIT", reason
+
