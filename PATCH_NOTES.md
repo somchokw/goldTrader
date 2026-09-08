@@ -8,6 +8,7 @@
 - **Signal Cooldown & Anti-Spam (45-Minute / $5 Price Movement):** ป้องกันการยิงสัญญาณซ้ำซ้อนในระยะเวลาสั้น ด้วยระบบ Cooldown 45 นาที และตรวจเช็คการขยับของราคาต้องห่างจากไม้ก่อนหน้าอย่างน้อย $5.00 USD
 - **Higher Minimum Risk/Reward & Stop Loss Buffer:** ปรับ `MIN_RR_RATIO = 1.5` (กำไรต้องมากกว่าความเสี่ยงอย่างน้อย 1.5 เท่า) และตรวจสอบระยะ Stop Loss ต้องไม่ต่ำกว่า $5.00 USD ป้องกันการโดน Stop Hunt จากความผันผวนปกติของทองคำ
 - **Enhanced Discord Commands (`#check` & `#checkgold`):** แสดงสถานะโควต้าสัญญาณรายวัน และประเมินความพร้อมของจังหวะเข้าเทรดแบบ Real-time ให้ผู้ใช้ทราบได้ทันที
+- **Graceful Credit Depletion Alert & Multi-Provider Fallback:** ดักจับ Error `429 Prepayment credits are depleted` จาก Google AI Studio เพื่อแจ้งเตือนภาษาไทยที่ชัดเจนพร้อมวิธีแก้ไข (เติมเงิน, เปลี่ยน Free API Key หรือใส่ DeepSeek/OpenAI Key) และระงับการแจ้งเตือน Error ซ้ำซ้อนลง Discord อัตโนมัติ
 
 ## v1.7.2 - 2026-09-07
 ### 🚀 Model Upgrade, Real-Time Gold Pricing & Cronjob Trigger Endpoints

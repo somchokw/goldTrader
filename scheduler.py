@@ -1,3 +1,4 @@
+import os
 import time
 import schedule
 import logging
@@ -20,6 +21,7 @@ last_signal_date = None
 last_signal_time = None
 last_signal_price = None
 last_signal_action = None
+credit_exhaustion_notified = False
 
 def get_quota_status() -> dict:
     """Returns the current day's signal quota and cooldown status."""
@@ -38,7 +40,7 @@ def get_quota_status() -> dict:
     }
 
 def run_trading_cycle(is_routine: bool = False):
-    global daily_signals_sent, last_signal_date, last_signal_time, last_signal_price, last_signal_action
+    global daily_signals_sent, last_signal_date, last_signal_time, last_signal_price, last_signal_action, credit_exhaustion_notified
 
     current_time = datetime.now(timezone.utc)
     current_date = current_time.date()
@@ -96,6 +98,11 @@ def run_trading_cycle(is_routine: bool = False):
         "gemini/gemini-flash-latest",
         "gemini/gemini-3.1-pro-preview"
     ]
+    if os.environ.get("DEEPSEEK_API_KEY"):
+        candidate_models.append("deepseek/deepseek-chat")
+    if os.environ.get("OPENAI_API_KEY"):
+        candidate_models.append("openai/gpt-4o-mini")
+
     models_to_try = []
     for m in candidate_models:
         if m and m not in models_to_try:
@@ -114,6 +121,7 @@ def run_trading_cycle(is_routine: bool = False):
             trade_plan = getattr(result, 'pydantic', None)
             if trade_plan:
                 logger.info(f"Successfully generated TradePlan using {model_name}")
+                credit_exhaustion_notified = False
                 break
         except Exception as e:
             last_error = e
@@ -127,9 +135,28 @@ def run_trading_cycle(is_routine: bool = False):
             
     try:
         if not trade_plan:
-             logger.error(f"Failed to parse TradePlan from Agent output (all candidate models tried). Last error: {last_error}")
-             send_discord_notify(f"❌ Exception in trading cycle: {last_error or 'Agent failed to return a valid TradePlan.'}")
-             return None
+            err_str = str(last_error or '')
+            logger.error(f"Failed to parse TradePlan from Agent output (all candidate models tried). Last error: {last_error}")
+            
+            # Graceful Credit Depletion / Quota Exhaustion Alert (Patch 1.7.4)
+            if "prepayment credits are depleted" in err_str or "RESOURCE_EXHAUSTED" in err_str or "429" in err_str:
+                if not credit_exhaustion_notified:
+                    credit_exhaustion_notified = True
+                    notice = (
+                        "⚠️ **Gemini API Credit Alert** ⚠️\n\n"
+                        "ยอดเครดิตใน Google AI Studio / Gemini API ของโปรเจกต์หมดลงแล้วครับ (`Prepayment credits are depleted`)\n\n"
+                        "**วิธีแก้ไข (เลือกอย่างใดอย่างหนึ่ง):**\n"
+                        "1. **เติมเครดิต:** เข้าไปเติมเงินที่ https://aistudio.google.com/ หรือ Google Cloud Billing\n"
+                        "2. **เปลี่ยน API Key ฟรี:** สร้าง Key ใหม่จาก Google Account อื่น (Free Tier) แล้วนำมาอัปเดตใน Environment Variable `GEMINI_API_KEY` บน Render\n"
+                        "3. **ใช้โมเดลอื่น:** ใส่ `DEEPSEEK_API_KEY` หรือ `OPENAI_API_KEY` ใน Render เพื่อให้ระบบสลับไปใช้ DeepSeek/OpenAI โดยอัตโนมัติ\n\n"
+                        "*หมายเหตุ: ระบบจะพักการแจ้งเตือน Error นี้ไว้ ไม่ส่งซ้ำจนกว่าจะมีการเปลี่ยน Key หรือเติมเครดิตครับ*"
+                    )
+                    send_discord_notify(notice)
+                else:
+                    logger.warning("Gemini credit depleted. Suppressing repetitive Discord error spam.")
+            else:
+                send_discord_notify(f"❌ Exception in trading cycle: {last_error or 'Agent failed to return a valid TradePlan.'}")
+            return None
              
         # Validate logic (Enforces MIN_RR_RATIO >= 1.5 and SL >= $5.0)
         is_valid = validate_trade_plan(trade_plan)
