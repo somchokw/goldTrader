@@ -71,10 +71,10 @@ def create_gold_crew(model_name: str = None):
 
     chief_trader = Agent(
         role="Chief Gold Trader",
-        goal="นำข้อมูล Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดที่มี Win Rate สูงเกิน 70% (อย่างน้อย 7 ใน 10 ไม้ต้องชนะ) โดยคุม Risk/Reward >= 1.5",
+        goal="นำข้อมูล Macro และ Technical Analyst มาประมวลผล เพื่อตัดสินใจและออกแผนการเทรดที่มี Win Rate สูงระดับมืออาชีพ (Win Rate >= 75-80% / อย่างน้อย 8 ใน 10 ไม้ต้องชนะ) โดยคุม Risk/Reward >= 1.5",
         backstory=(
-            "คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุนระดับมืออาชีพที่ยึดหลัก Sniper Execution\n"
-            "เป้าหมายสูงสุดคือ Win Rate >= 70% เทรดเฉพาะจังหวะที่มีแต้มต่อสูงชัดเจนเท่านั้น ไม่เทรดพร่ำเพรื่อ ไม่ไล่ราคาที่ก้นเหวหรือยอดดอย\n"
+            "คุณคือหัวหน้าทีมเทรดผู้จัดการพอร์ตลงทุนระดับมืออาชีพที่ยึดหลัก Institutional Quant & Sniper Execution\n"
+            "เป้าหมายสูงสุดคือ Win Rate >= 75-80% เทรดเฉพาะจังหวะที่มีแต้มต่อสูงและมีสัญญาณคอนเฟิร์มหลายชั้น (Multi-Timeframe Alignment + Confluence) เท่านั้น ไม่เทรดพร่ำเพรื่อ ไม่ไล่ราคาที่ก้นเหวหรือยอดดอย\n"
             "กฎเหล็กเรื่องราคา: ใช้ราคาตลาดสดปัจจุบัน (close_price) จาก Tool 'Fetch Technical Data' เท่านั้น\n"
             "ห้ามจำหรือเดาราคาเก่าในอดีต (เช่น 1,900 - 2,400 USD) ทุกจุดเข้า Entry, SL, TP ต้องอ้างอิงจากราคาปัจจุบันในกราฟ 15m ล่าสุดเท่านั้น"
         ),
@@ -101,8 +101,8 @@ def create_gold_crew(model_name: str = None):
     )
 
     technical_task = Task(
-        description="Fetch gold market data (1d and 15m). Compute technical indicators (RSI, MACD, BB, Stochastic) and support/resistance levels from swing_high/swing_low.",
-        expected_output="A JSON object containing current market price, RSI, trend, support and resistance levels.",
+        description="Fetch gold market data (1d and 15m). Compute technical indicators (EMA Ribbon, ADX, RSI, MACD, BB, Stochastic, Divergence, Rejection Candlesticks) and support/resistance levels from swing_high/swing_low.",
+        expected_output="A JSON object containing current market price, indicators, trend, support and resistance levels.",
         agent=technical_analyst
     )
 
@@ -114,21 +114,26 @@ def create_gold_crew(model_name: str = None):
             "- Check the exact 'close_price' in the 15m Data from 'Fetch Technical Data' (reflecting the live market price).\n"
             "- All trade prices ('exact_entry_price', 'stop_loss', 'take_profit_1', 'take_profit_2') MUST be located directly around the current 15m close price.\n"
             "- NEVER use or hallucinate outdated historical gold prices (e.g. 1900-2400 USD). Base all calculations strictly on the live snapshot.\n\n"
-            "HIGH WIN-RATE SNIPER RULES (TARGET WIN RATE >= 70% / 7 out of 10 wins):\n"
-            "0. STRICT TREND ALIGNMENT (ABSOLUTELY NO COUNTER-TREND TRADING):\n"
-            "   - IF 15M TREND IS BEARISH (Price < SMA20): BUY IS STRICTLY FORBIDDEN! NEVER catch a falling knife. When price crashes to Lower BB and Stochastic is low, it is a bearish dump, NOT a buy signal! In a Bearish trend, you may ONLY consider SELL on pullbacks to resistance (SMA20/Upper BB), or WAIT.\n"
-            "   - IF 15M TREND IS BULLISH (Price > SMA20): SELL IS STRICTLY FORBIDDEN! NEVER short into an uptrend. In a Bullish trend, you may ONLY consider BUY on dips to support (SMA20/Lower BB), or WAIT.\n"
-            "1. STRICT PULLBACK TRADING ONLY - ABSOLUTELY NO CHASING:\n"
-            "   - FOR SELL: NEVER sell when Stochastic %K < 35 or when price is already at the bottom near Lower Bollinger Band! Only SELL when price has pulled back UP into resistance (SMA20, Upper BB, or Swing High) and Stochastic %K is >= 60 (exhaustion/reversal).\n"
-            "   - FOR BUY: NEVER buy when Stochastic %K > 65 or when price is already at the peak near Upper Bollinger Band! Only BUY when price has dipped DOWN into support (SMA20, Lower BB, or Swing Low) and Stochastic %K is <= 40 (reversal from low).\n"
-            "2. STOP LOSS DISCIPLINE (PREVENT STOP HUNTS):\n"
+            "INSTITUTIONAL QUANT SNIPER RULES (TARGET WIN RATE >= 75-80%):\n"
+            "0. MULTI-TIMEFRAME (MTF) & TREND ALIGNMENT (ABSOLUTELY NO COUNTER-TREND):\n"
+            "   - HIGHER TIMEFRAME (1H): If 'htf_trend_1h' is 'Bullish', SELL is strictly forbidden! If 'htf_trend_1h' is 'Bearish', BUY is strictly forbidden!\n"
+            "   - 15M TREND: IF 15M is Bearish (Price < SMA20): BUY is strictly forbidden! Only consider SELL on pullbacks, or WAIT.\n"
+            "   - 15M TREND: IF 15M is Bullish (Price > SMA20): SELL is strictly forbidden! Only consider BUY on dips, or WAIT.\n"
+            "   - Align 15m entry with the 1H macro trend. Both timeframes MUST point in the same direction or 1H must be neutral.\n"
+            "1. ADX TREND STRENGTH FILTER:\n"
+            "   - Check 'adx' value. If ADX < 20, the market is choppy sideways without directional edge. Output 'WAIT'.\n"
+            "2. STRICT PULLBACK TRADING ONLY - ABSOLUTELY NO CHASING:\n"
+            "   - FOR SELL: NEVER sell when Stochastic %K < 35 or when price is already at the bottom near Lower Bollinger Band! Only SELL when price has pulled back UP into resistance (SMA20, EMA 21/50, Upper BB, or Swing High) and Stochastic %K is >= 60.\n"
+            "   - FOR BUY: NEVER buy when Stochastic %K > 65 or when price is already at the peak near Upper Bollinger Band! Only BUY when price has dipped DOWN into support (SMA20, EMA 21/50, Lower BB, or Swing Low) and Stochastic %K is <= 40.\n"
+            "3. CANDLESTICK REJECTION & DIVERGENCE CONFLUENCE:\n"
+            "   - Confirm entry using 'candlestick_pattern' (e.g. Rejection Pin Bar, Engulfing) or 'rsi_divergence'. Never enter against an active strong momentum candle.\n"
+            "4. STOP LOSS DISCIPLINE (PREVENT STOP HUNTS):\n"
             "   - Stop Loss MUST be placed beyond recent market structure (Swing High for SELL, Swing Low for BUY) with a safety buffer of at least $5 to $10 USD (or 1x ATR).\n"
             "   - NEVER set ultra-tight Stop Losses (< $5.00) that get stopped out by normal market noise.\n"
-            "3. RISK / REWARD RATIO >= 1.5:\n"
+            "5. RISK / REWARD RATIO >= 1.5:\n"
             "   - Reward distance (|TP1 - Entry|) MUST be at least 1.5x of Risk distance (|Entry - SL|).\n"
-            "4. HIGH CONVICTION THRESHOLD:\n"
-            "   - If the setup does not have at least 70% confidence or is in the middle of a choppy range, output 'WAIT'.\n"
-            "   - It is far better to WAIT than to take a low-probability trade. Maximum 10 high-quality trades per day."
+            "6. HIGH CONVICTION THRESHOLD:\n"
+            "   - If the setup does not have at least 75% confidence, output 'WAIT'. Maximum 10 high-quality trades per day."
         ),
         expected_output="A JSON object conforming strictly to the TradePlan schema.",
         agent=chief_trader,

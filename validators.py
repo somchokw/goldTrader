@@ -25,6 +25,22 @@ def validate_trade_plan(plan, snapshot=None) -> bool:
             logger.error("Trend is Bullish (price above SMA20); counter-trend SELL is strictly forbidden to prevent fighting an uptrend.")
             return False
 
+    # Higher Timeframe (HTF) 1H alignment check (Patch 1.8.0 Multi-Timeframe Alignment)
+    if snapshot and getattr(snapshot, "htf_trend_1h", None):
+        htf = (snapshot.htf_trend_1h or "").lower()
+        if "bullish" in htf and plan.action == "SELL":
+            logger.error("Higher Timeframe (1H) is Bullish; counter-trend SELL is strictly forbidden against macro momentum.")
+            return False
+        elif "bearish" in htf and plan.action == "BUY":
+            logger.error("Higher Timeframe (1H) is Bearish; counter-trend BUY is strictly forbidden against macro momentum.")
+            return False
+
+    # ADX Trend Strength Filter (Patch 1.8.0)
+    if snapshot and getattr(snapshot, "adx", None) is not None:
+        if snapshot.adx < 20.0:
+            logger.error(f"ADX ({snapshot.adx:.1f}) is below 20; market is choppy sideways without clear momentum.")
+            return False
+
     # Calculate Risk
     risk = abs(plan.exact_entry_price - plan.stop_loss)
     if risk == 0:

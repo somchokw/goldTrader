@@ -21,6 +21,16 @@ class MarketSnapshot(BaseModel):
     swing_low: Optional[float] = Field(None, description="The lowest price in the recent N periods, acting as support.")
     stoch_k: Optional[float] = Field(None, description="Stochastic %K line (8,3,3)")
     stoch_d: Optional[float] = Field(None, description="Stochastic %D line (8,3,3)")
+    ema_9: Optional[float] = Field(None, description="EMA 9 (Short-term momentum)")
+    ema_21: Optional[float] = Field(None, description="EMA 21 (Short-term pullback dynamic level)")
+    ema_50: Optional[float] = Field(None, description="EMA 50 (Intermediate trend filter)")
+    ema_200: Optional[float] = Field(None, description="EMA 200 (Long-term baseline)")
+    adx: Optional[float] = Field(None, description="Average Directional Index (ADX 14) trend strength")
+    adx_di_plus: Optional[float] = Field(None, description="ADX DI+ directional indicator")
+    adx_di_minus: Optional[float] = Field(None, description="ADX DI- directional indicator")
+    htf_trend_1h: Optional[str] = Field("Neutral", description="Higher-Timeframe 1H Trend (Bullish / Bearish / Neutral)")
+    candlestick_pattern: Optional[str] = Field(None, description="Identified candlestick confirmation (Pin Bar / Engulfing)")
+    rsi_divergence: Optional[str] = Field(None, description="RSI Divergence signal (Bullish Divergence / Bearish Divergence / None)")
 
 class TradePlan(BaseModel):
     action: str = Field(description="Must be exactly one of: 'BUY', 'SELL', 'WAIT'")

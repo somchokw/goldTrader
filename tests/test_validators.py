@@ -81,6 +81,52 @@ def test_validate_trend_following_sell():
     )
     mock_snapshot = MagicMock()
     mock_snapshot.trend_structure = "Bearish"
+    mock_snapshot.htf_trend_1h = "Bearish"
+    mock_snapshot.adx = 26.0
     assert validate_trade_plan(plan, snapshot=mock_snapshot) == True
+
+def test_validate_htf_alignment_sell_rejected_when_htf_bullish():
+    from unittest.mock import MagicMock
+    plan = TradePlan(
+        action="SELL",
+        exact_entry_price=2000.0,
+        stop_loss=2010.0,
+        take_profit_1=1980.0,
+        rationale="Test"
+    )
+    mock_snapshot = MagicMock()
+    mock_snapshot.trend_structure = "Bearish"  # 15m is bearish
+    mock_snapshot.htf_trend_1h = "Bullish"     # But 1H is bullish!
+    assert validate_trade_plan(plan, snapshot=mock_snapshot) == False
+
+def test_validate_htf_alignment_buy_rejected_when_htf_bearish():
+    from unittest.mock import MagicMock
+    plan = TradePlan(
+        action="BUY",
+        exact_entry_price=2000.0,
+        stop_loss=1990.0,
+        take_profit_1=2020.0,
+        rationale="Test"
+    )
+    mock_snapshot = MagicMock()
+    mock_snapshot.trend_structure = "Bullish"  # 15m is bullish
+    mock_snapshot.htf_trend_1h = "Bearish"    # But 1H is bearish!
+    assert validate_trade_plan(plan, snapshot=mock_snapshot) == False
+
+def test_validate_adx_low_rejected():
+    from unittest.mock import MagicMock
+    plan = TradePlan(
+        action="BUY",
+        exact_entry_price=2000.0,
+        stop_loss=1990.0,
+        take_profit_1=2020.0,
+        rationale="Test"
+    )
+    mock_snapshot = MagicMock()
+    mock_snapshot.trend_structure = "Bullish"
+    mock_snapshot.htf_trend_1h = "Bullish"
+    mock_snapshot.adx = 17.5  # Below 20 threshold
+    assert validate_trade_plan(plan, snapshot=mock_snapshot) == False
+
 
 

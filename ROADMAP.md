@@ -6,6 +6,17 @@
 
 ## ✅ Completed Patches (ดำเนินการแล้ว)
 
+### 🏛️ Patch v1.8.0: Institutional Quant Upgrade (MTF 1H Alignment, EMA Ribbon, ADX, Divergence & News Guard)
+**สถานะ: ดำเนินการแล้วเสร็จ**
+- เชื่อมต่อข้อมูล Kraken 1H (`interval=60`) และคำนวณ EMA 50/200 บนกราฟ 1H บังคับเทรดตามทิศทางเทรนด์ใหญ่เท่านั้น (ห้าม SELL สวน 1H ขาขึ้น และห้าม BUY สวน 1H ขาลง)
+- คำนวณ EMA Ribbon (9, 21, 50, 200) เพื่อระบุจุดย่อตัว (Pullback) และแนวรับ-แนวต้านไดนามิก
+- คำนวณ ADX (14) กรองตลาด Sideways (ADX < 20 ตัดจบที่ WAIT ทันที)
+- ระบบตรวจจับ RSI Bullish / Bearish Divergence อัตโนมัติ
+- ตรวจสอบ Candlestick Rejection (Pin Bar / Engulfing) ยืนยันการปฏิเสธราคา ไม่ดักสวนแท่งเทียนที่กำลังพุ่งแรง
+- ติดตั้ง US News & NY Open Volatility Guard (20:15 – 21:45 น. เวลาไทย) พักการออกสัญญาณช่วงผันผวนสูง
+- ระบบ Anti-Revenge Directional Cooldown (90 นาที) ห้ามเปิดไม้ทิศทางเดิมซ้ำหลังเพิ่งเข้าเทรด
+- ยกระดับเป้าหมาย Win Rate สู่ระดับ $\ge$ 75–80% (ชนะอย่างน้อย 8 ใน 10 ไม้)
+
 ### 🔇 Patch v1.7.5: Pure Sniper Mode (Total Silence on WAIT & No Routine Notifications)
 **สถานะ: ดำเนินการแล้วเสร็จ**
 - ปิดระบบแจ้งเตือนแบบประจำรอบ (Routine Periodic Update 4 ชม.) ออกจากระบบ 100% ตามคำสั่งของผู้ใช้

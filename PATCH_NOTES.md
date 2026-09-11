@@ -1,5 +1,16 @@
 # 📝 Patch Notes
 
+## v1.8.0 - 2026-09-11
+### 🏛️ Institutional Quant Upgrade: Multi-Timeframe Alignment, EMA Ribbon, ADX, Divergence & News Volatility Guard
+- **🌐 Multi-Timeframe (MTF) 1H & 15m Alignment:** เชื่อมต่อข้อมูลแท่งเทียน 1-Hour (1H) จาก Kraken OHLC (`interval=60`) คำนวณ EMA 50 และ EMA 200 บนกราฟ 1H ล็อกกฎเหล็กห้ามเปิด SELL สวนเทรนด์ใหญ่ขาขึ้น 1H และห้ามเปิด BUY สวนเทรนด์ใหญ่ขาลง 1H 100% ป้องกันการขาดทุนจากการดีดตัวของราคาในภาพใหญ่
+- **📊 Advanced EMA Ribbon (9, 21, 50, 200):** คำนวณเส้น EMA 9, 21, 50, 200 บนกราฟ 15m ใช้เป็นแนวรับ-แนวต้านไดนามิกและประเมินโมเมนตัมการย่อตัว (Pullback) ได้อย่างแม่นยำ
+- **📈 ADX (14) Trend Strength Filter:** ตรวจวัดความแข็งแกร่งของเทรนด์ หาก ADX < 20 (ตลาด Sideways ไร้ทิศทาง) บังคับตัดจบที่ `WAIT` ทันทีเพื่อป้องกันการถูกตลาดสับขาหลอก
+- **🎯 RSI Divergence Detection:** ตรวจจับสัญญาณกลับตัว Bullish Divergence (ราคาทำ Lower Low แต่ RSI ยก Higher Low) และ Bearish Divergence (ราคาทำ Higher High แต่ RSI กด Lower High) เพื่อเป็น Confluence ในการเข้าจังหวะ Sniper
+- **🕯️ Candlestick Rejection Confirmation:** ตรวจสอบแพทเทิร์นแท่งเทียน Rejection Pin Bar (ไส้เทียนยาวปฏิเสธราคา $\ge 1.5$ เท่าของเนื้อเทียน) และ Engulfing ป้องกันการเปิดออเดอร์ดักสวนแท่งเทียนโมเมนตัมที่กำลังพุ่งทะลุ
+- **⏰ US News & NY Open Volatility Guard (20:15 – 21:45 น. เวลาไทย / 13:15 – 14:45 UTC):** ระงับการออกสัญญาณเทรดใหม่ในช่วงประกาศตัวเลขเศรษฐกิจสหรัฐฯ สำคัญ (CPI, PPI, Non-Farm, Jobless Claims) และช่วงเปิดตลาด New York เพื่อป้องกัน Stop Hunt จากสถาบันการเงิน
+- **🚫 Anti-Revenge Directional Cooldown (90 นาที):** ป้องกันการออกไม้ซ้ำในทิศทางเดิมหลังจากเพิ่งโดนลาก โดยบังคับเว้นระยะ 90 นาที เว้นแต่ราคาจะทำ New Low/High ใหม่
+- **🛡️ High Win-Rate Target (≥ 75–80%):** ยกระดับเกณฑ์การคัดเลือกและเงื่อนไขของ Chief Gold Trader สู่เป้าหมายชนะอย่างน้อย 8 ใน 10 ไม้
+
 ## v1.7.5 - 2026-09-08
 ### 🔇 Pure Sniper Mode: Total Silence on WAIT & Permanent Removal of Routine Notifications
 - **Permanent Removal of Routine Loops:** ถอดระบบรายงานประจำรอบ 4 ชั่วโมง (`routine_loop` และ `_run_routine`) ออกจากระบบ 100% ตามความต้องการของผู้ใช้ บอทจะไม่ส่งข้อความรายงานตามเวลาอีกต่อไป

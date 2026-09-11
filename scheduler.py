@@ -9,13 +9,14 @@ from risk import generate_risk_matrix
 from notifications import send_discord_notify
 from config import (
     GEMINI_API_KEY, SYMBOL, LLM_MODEL,
-    MAX_DAILY_SIGNALS, SIGNAL_COOLDOWN_MINUTES, MIN_PRICE_CHANGE_FOR_NEW_SIGNAL
+    MAX_DAILY_SIGNALS, SIGNAL_COOLDOWN_MINUTES, DIRECTIONAL_COOLDOWN_MINUTES,
+    MIN_PRICE_CHANGE_FOR_NEW_SIGNAL, is_news_guard_active
 )
 from indicators import fetch_technical_data, evaluate_market_readiness
 
 logger = logging.getLogger(__name__)
 
-# Daily Quota & Anti-Spam Tracking State (Patch 1.7.3)
+# Daily Quota & Anti-Spam Tracking State (Patch 1.7.3 & 1.8.0)
 daily_signals_sent = 0
 last_signal_date = None
 last_signal_time = None
@@ -48,6 +49,14 @@ def run_trading_cycle(is_routine: bool = False):
         daily_signals_sent = 0
         last_signal_date = current_date
         logger.info(f"New trading day ({current_date}). Reset daily quota to 0/{MAX_DAILY_SIGNALS}.")
+
+    # 0. US High-Impact News & NY Open Volatility Guard (20:15 - 21:45 Thai time)
+    if is_news_guard_active(current_time):
+        logger.info(
+            "US High-Impact News & Market Open Volatility Guard is ACTIVE (13:15-14:45 UTC / 20:15-21:45 TH). "
+            "Suppressing new signal entries to protect capital against stop hunts and liquidity spikes."
+        )
+        return None
 
     cycle_type = "Routine Update" if is_routine else "Sniper Scanner"
     logger.info(f"Starting Trading Cycle ({cycle_type}) for {SYMBOL}. Quota today: {daily_signals_sent}/{MAX_DAILY_SIGNALS}")
@@ -88,6 +97,16 @@ def run_trading_cycle(is_routine: bool = False):
     if not is_ready:
         logger.info(f"Market pre-filter: NOT READY ({readiness_reason}). Staying silent.")
         return None
+
+    # 5. Anti-Revenge Directional Cooldown: Do not issue same-direction trade within 90 minutes
+    if last_signal_action and last_signal_action == bias and last_signal_time is not None:
+        dir_elapsed = (current_time - last_signal_time).total_seconds() / 60.0
+        if dir_elapsed < DIRECTIONAL_COOLDOWN_MINUTES:
+            logger.info(
+                f"Directional Cooldown active for {bias} ({dir_elapsed:.1f}m < {DIRECTIONAL_COOLDOWN_MINUTES}m). "
+                f"Suppressing duplicate {bias} trade to prevent doubling down on a losing trend."
+            )
+            return None
 
     logger.info(f"Pre-filter PASSED: Suggested bias = {bias} ({readiness_reason}). Invoking CrewAI...")
     
@@ -180,18 +199,31 @@ def run_trading_cycle(is_routine: bool = False):
         last_signal_action = trade_plan.action
 
         final_message = f"🚨 **High-Conviction Sniper Signal!** 🚨\n\n"
-        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.7.5)\n"
+        final_message += f"**Trade Plan for {SYMBOL}** (Patch 1.8.0 - Quant Multi-Timeframe)\n"
         final_message += f"**Action:** {trade_plan.action}\n"
         final_message += f"**Quota วันนี้:** [ไม้ที่ {daily_signals_sent}/{MAX_DAILY_SIGNALS}]\n"
         if getattr(trade_plan, 'trade_style', None):
             final_message += f"**รูปแบบแผน:** {trade_plan.trade_style}\n"
         
+        # Confluence snapshot
+        confluences = []
+        if getattr(snapshot, 'htf_trend_1h', None):
+            confluences.append(f"1H Trend: `{snapshot.htf_trend_1h}`")
+        if getattr(snapshot, 'adx', None) is not None:
+            confluences.append(f"ADX: `{snapshot.adx:.1f}`")
+        if getattr(snapshot, 'candlestick_pattern', None):
+            confluences.append(f"Candle: `{snapshot.candlestick_pattern}`")
+        if getattr(snapshot, 'rsi_divergence', None):
+            confluences.append(f"Divergence: `{snapshot.rsi_divergence}`")
+        if confluences:
+            final_message += f"**Confluence:** {' | '.join(confluences)}\n"
+
         final_message += f"**Entry:** ${trade_plan.exact_entry_price:.2f}\n"
         final_message += f"**Stop Loss:** ${trade_plan.stop_loss:.2f} (ห่าง ${risk:.2f})\n"
         final_message += f"**Take Profit 1:** ${trade_plan.take_profit_1:.2f} (เป้า +${reward:.2f})\n"
         if trade_plan.take_profit_2:
             final_message += f"**Take Profit 2:** ${trade_plan.take_profit_2:.2f}\n"
-        final_message += f"**Risk/Reward Ratio:** 1 : {rr_ratio:.2f} (เป้าหมาย Win Rate ≥ 70%)\n"
+        final_message += f"**Risk/Reward Ratio:** 1 : {rr_ratio:.2f} (เป้าหมาย Win Rate ≥ 75-80%)\n"
             
         final_message += f"\n**Rationale:**\n{trade_plan.rationale}\n"
         final_message += "\n---\n**โปรดให้คะแนนความแม่นยำและเหตุผลของแผนนี้ (0-10) โดยพิมพ์ตัวเลขลงในช่องแชทได้เลยครับ** 👇"
